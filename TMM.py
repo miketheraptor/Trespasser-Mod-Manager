@@ -1,6 +1,6 @@
 
 #Trespasser Mod Manager (TMM)
-version_number = 'v0.3'
+version_number = 'v0.3.2'
 
 import os
 from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk
@@ -47,6 +47,7 @@ class MainApplication:
         print('launch_game says: Launching game')
         os.startfile('TresCE.exe')
 
+# The following creates a tab for containing settings toggles for the trespasser.ini.
 #    def create_tabs(self):
 #        tabs_bar = ttk.Notebook(self.master)
 #        mods_tab = ttk.Frame(tabs_bar)
@@ -72,9 +73,13 @@ class MainApplication:
         self.active_mod = active_mod
 
     def check_installed_mods(self):
-        installed_mods = os.listdir('.\mods')
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        mod_directory = parser['Paths']['fmpath']
+        print('check_installed_mods says that the mod directory is: ' + mod_directory)
+        installed_mods = os.listdir(mod_directory)
         print('check_installed_mods says the installed mods are:', end=' ')
-        print(os.listdir('.\mods'))
+        print(os.listdir(mod_directory))
         return installed_mods
 
     def set_selected_mod(self, event):
@@ -88,3 +93,4 @@ if __name__ == '__main__':
     root = Tk()
     tmm_app = MainApplication(root)
     root.mainloop()
+    
