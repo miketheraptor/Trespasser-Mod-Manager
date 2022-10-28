@@ -1,9 +1,10 @@
 
 #Trespasser Mod Manager (TMM)
-version_number = 'v0.3.2'
+version_number = 'v0.3.3'
 
 import os
-from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk
+from site import abs_paths
+from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog
 from configparser import ConfigParser
 
 class MainApplication:
@@ -38,17 +39,27 @@ class MainApplication:
         active_mod_changer_button.pack(side='bottom')
 
     def configure_gui(self):
+        '''
+        UI configuation settings.
+        '''
         self.master.title('Trespasser Mod Manager ' + version_number)
 #        self.master.iconbitmap(r'tmm_icon.ico')
         self.master.geometry('400x300')
         self.master.resizable(False, False)
 
     def launch_game(self):
+        '''
+        Opens a dialogue window with a file browser allowing the user to select their Trespasser CE EXE file and then launches the file.
+        '''
+        self.exefile = filedialog.askopenfilename(initialdir='./', title='Select Trespasser CE EXE', filetypes=[('Trespasser CE','*.exe')])
+        print(self.exefile)
+        os.startfile(self.exefile)
         print('launch_game says: Launching game')
-        os.startfile('TresCE.exe')
 
-# The following creates a tab for containing settings toggles for the trespasser.ini.
 #    def create_tabs(self):
+#        '''
+#        Creates a tab for containing settings toggles for the trespasser.ini.
+#        '''
 #        tabs_bar = ttk.Notebook(self.master)
 #        mods_tab = ttk.Frame(tabs_bar)
 #        ce_settings_tab = ttk.Frame(tabs_bar)
@@ -57,6 +68,9 @@ class MainApplication:
 #        tabs_bar.pack(expand=1, fill='both')
 
     def change_active_mod(self, selected_mod, label):
+        '''
+        Edits the tp_mod.ini to reflect the user's new mod choice.
+        '''
         parser = ConfigParser()
         parser.read('tp_mod.ini')
         parser['FM']['ActiveFM'] = selected_mod
@@ -73,6 +87,9 @@ class MainApplication:
         self.active_mod = active_mod
 
     def check_installed_mods(self):
+        '''
+        Checks the user's tp_mod.ini to determine the fmpath folder, then checks all directories in the fmpath folder to generate a list of which mods are installed.
+        '''
         parser = ConfigParser()
         parser.read('tp_mod.ini')
         mod_directory = parser['Paths']['fmpath']
