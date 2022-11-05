@@ -1,10 +1,10 @@
 
 #Trespasser Mod Manager (TMM)
-version_number = 'v0.3.3'
+version_number = 'v0.3.4'
 
 import os
 from site import abs_paths
-from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog
+from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog, messagebox
 from configparser import ConfigParser
 
 class MainApplication:
@@ -46,6 +46,7 @@ class MainApplication:
 #        self.master.iconbitmap(r'tmm_icon.ico')
         self.master.geometry('400x300')
         self.master.resizable(False, False)
+        self.master.eval('tk::PlaceWindow . center')        # centers the window
 
     def launch_game(self):
         '''
@@ -80,11 +81,14 @@ class MainApplication:
         print('change_active_mod says that the active mod has been changed to: ' + selected_mod)
 
     def set_active_mod(self):
-        parser = ConfigParser()
-        parser.read('tp_mod.ini')
-        active_mod = parser['FM']['ActiveFM']
-        print('set_active_mod says the active mod is: ' + active_mod)
-        self.active_mod = active_mod
+        try:
+            parser = ConfigParser()
+            parser.read('tp_mod.ini')
+            active_mod = parser['FM']['ActiveFM']
+            print('set_active_mod says the active mod is: ' + active_mod)
+            self.active_mod = active_mod
+        except KeyError:
+            messagebox.showerror('Trespasser Mod Manager - ERROR', 'tp_mod.ini not found. Make sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
 
     def check_installed_mods(self):
         '''
