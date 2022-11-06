@@ -97,10 +97,8 @@ class MainApplication:
         parser = ConfigParser()
         parser.read('tp_mod.ini')
         mod_directory = parser['Paths']['fmpath']
-        print('check_installed_mods says that the mod directory is: ' + mod_directory)
-        installed_mods = os.listdir(mod_directory)
-        print('check_installed_mods says the installed mods are:', end=' ')
-        print(os.listdir(mod_directory))
+        installed_mods = next(os.walk(mod_directory))[1]
+        print(next(os.walk(mod_directory))[1])
         return installed_mods
 
     def set_selected_mod(self, event):
