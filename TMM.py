@@ -1,6 +1,6 @@
 
 #Trespasser Mod Manager (TMM)
-version_number = 'v0.3.4'
+version_number = 'v0.3.5'
 
 import os
 from site import abs_paths
@@ -12,6 +12,7 @@ class MainApplication:
         self.master = master
         self.active_mod = 'not set'
         self.selected_mod = 'not set'
+        self.dependency_validation()
         self.set_active_mod()
         self.configure_gui()
 
@@ -81,14 +82,11 @@ class MainApplication:
         print('change_active_mod says that the active mod has been changed to: ' + selected_mod)
 
     def set_active_mod(self):
-        try:
             parser = ConfigParser()
             parser.read('tp_mod.ini')
             active_mod = parser['FM']['ActiveFM']
             print('set_active_mod says the active mod is: ' + active_mod)
             self.active_mod = active_mod
-        except KeyError:
-            messagebox.showerror('Trespasser Mod Manager - ERROR', 'tp_mod.ini not found. Make sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
 
     def check_installed_mods(self):
         '''
@@ -107,6 +105,12 @@ class MainApplication:
         print('check_selected_mod says the selected mod is: ' + selected_mod)
         self.selected_mod = selected_mod
 
+    def dependency_validation(self):
+        if os.path.exists('tp_mod.ini'):
+            print('dependency_validation says found tp_mod.ini')
+        else:
+            messagebox.showerror('Trespasser Mod Manager - ERROR', 'tp_mod.ini not found. Make sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
+            exit()
 
 if __name__ == '__main__':
     root = Tk()
