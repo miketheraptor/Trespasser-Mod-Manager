@@ -12,6 +12,7 @@ class MainApplication:
         self.master = master
         self.active_mod = 'not set'
         self.selected_mod = 'not set'
+        self.use_mod_quality_setting = 'not set'
         self.dependency_validation()
         self.set_active_mod()
         self.configure_gui()
@@ -76,6 +77,7 @@ class MainApplication:
         parser = ConfigParser()
         parser.read('tp_mod.ini')
         parser['FM']['ActiveFM'] = selected_mod
+        parser['FM']['UseRecommendedQuality'] = parser['FM']['UseRecommendedQuality']
         with open('tp_mod.ini', 'w') as new_config_file:
             parser.write(new_config_file)
         label.config(text='Active Mod: '+ selected_mod)
@@ -106,6 +108,9 @@ class MainApplication:
         self.selected_mod = selected_mod
 
     def dependency_validation(self):
+        '''
+        Checks for files which the app is dependent on and displays appropriate error messages based on results.
+        '''
         if os.path.exists('tp_mod.ini'):
             print('dependency_validation says found tp_mod.ini')
         else:
