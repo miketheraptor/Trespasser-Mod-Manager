@@ -77,7 +77,8 @@ class MainApplication:
         parser = ConfigParser()
         parser.read('tp_mod.ini')
         parser['FM']['ActiveFM'] = selected_mod
-        parser['FM']['UseRecommendedQuality'] = parser['FM']['UseRecommendedQuality']
+        if parser.has_option('FM', 'UseRecommendedQuality'):
+            parser['FM']['UseRecommendedQuality'] = parser['FM']['UseRecommendedQuality']   #preserves the user's original UseRecommendedQuality setting
         with open('tp_mod.ini', 'w') as new_config_file:
             parser.write(new_config_file)
         label.config(text='Active Mod: '+ selected_mod)
