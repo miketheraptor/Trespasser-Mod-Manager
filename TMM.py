@@ -6,6 +6,7 @@ import os
 from site import abs_paths
 from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog, messagebox, Checkbutton, IntVar
 from configparser import ConfigParser
+from sys import exit
 
 class MainApplication:
     def __init__(self, master):
@@ -149,7 +150,7 @@ class MainApplication:
             print('dependency_validation says found tp_mod.ini')
         else:
             messagebox.showerror('Trespasser Mod Manager - ERROR', 'tp_mod.ini not found. Make sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
-            exit()
+            raise SystemExit
 
 if __name__ == '__main__':
     root = Tk()
