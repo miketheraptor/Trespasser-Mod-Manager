@@ -4,7 +4,7 @@ version_number = 'v0.3.5'
 
 import os
 from site import abs_paths
-from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog, messagebox
+from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog, messagebox, Checkbutton, IntVar
 from configparser import ConfigParser
 
 class MainApplication:
@@ -12,7 +12,6 @@ class MainApplication:
         self.master = master
         self.active_mod = 'not set'
         self.selected_mod = 'not set'
-        self.use_mod_quality_setting = 'not set'
         self.dependency_validation()
         self.set_active_mod()
         self.configure_gui()
@@ -39,6 +38,11 @@ class MainApplication:
 
         active_mod_changer_button = Button(self.master, text='Set as Active Mod', command=lambda: self.change_active_mod(self.selected_mod, active_mod_text))
         active_mod_changer_button.pack(side='bottom')
+
+        self.quality_var = IntVar()
+        self.quality_var.set(self.get_mod_quality_setting())
+        mod_quality_setting_toggle = Checkbutton(self.master, text='Use Recommended Quality Settings from Active Mod', variable=self.quality_var, onvalue=1, offvalue=0, command=self.set_mod_quality_setting)
+        mod_quality_setting_toggle.pack(side='bottom')
 
     def configure_gui(self):
         '''
@@ -107,6 +111,35 @@ class MainApplication:
             selected_mod = event.widget.get(i)
         print('check_selected_mod says the selected mod is: ' + selected_mod)
         self.selected_mod = selected_mod
+
+    def get_mod_quality_setting(self):
+        '''
+        Gets the user's tp_mod.ini UseRecommendedQuality setting.
+        '''
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        if parser.has_option('FM','UseRecommendedQuality') and (parser['FM']['UseRecommendedQuality'] == 'true'):
+            mod_quality_setting = parser['FM']['UseRecommendedQuality']
+            print('get_mod_quality_setting says the quality setting is: ' + mod_quality_setting)
+            return True
+        else:
+            return False
+
+    def set_mod_quality_setting(self):
+        '''
+        Sets the user's tp_mod.ini UseRecommendedQuality setting to true or false.
+        '''
+        print('UseRecommendedQuality checkbox clicked')
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        if parser.has_option('FM','UseRecommendedQuality') and (parser['FM']['UseRecommendedQuality'] == 'true'):
+            parser['FM']['UseRecommendedQuality'] = 'false'
+            print('UseRecommendedQuality set to FALSE')
+        else:
+            parser['FM']['UseRecommendedQuality'] = 'true'
+            print('UseRecommendedQuality set to TRUE')
+        with open('tp_mod.ini', 'w') as new_config_file:
+            parser.write(new_config_file)
 
     def dependency_validation(self):
         '''
