@@ -6,7 +6,6 @@ import os
 from site import abs_paths
 from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog, messagebox, Checkbutton, IntVar
 from configparser import ConfigParser
-from sys import exit
 
 class MainApplication:
     def __init__(self, master):
