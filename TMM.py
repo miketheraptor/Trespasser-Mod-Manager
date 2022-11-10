@@ -2,10 +2,13 @@
 #Trespasser Mod Manager (TMM)
 version_number = 'v0.3.5'
 
+import logging
 import os
 from site import abs_paths
 from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog, messagebox, Checkbutton, IntVar
 from configparser import ConfigParser
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', datefmt='%Y-%m-%d %I:%M', level=logging.INFO)
 
 class MainApplication:
     def __init__(self, master):
@@ -59,9 +62,8 @@ class MainApplication:
         Opens a dialogue window with a file browser allowing the user to select their Trespasser CE EXE file and then launches the file.
         '''
         self.exefile = filedialog.askopenfilename(initialdir='./', title='Select Trespasser CE EXE', filetypes=[('Trespasser CE','*.exe')])
-        print(self.exefile)
         os.startfile(self.exefile)
-        print('launch_game says: Launching game')
+        logging.info('launch_game says: Launching game')
 
 #    def create_tabs(self):
 #        '''
@@ -86,13 +88,13 @@ class MainApplication:
         with open('tp_mod.ini', 'w') as new_config_file:
             parser.write(new_config_file)
         label.config(text='Active Mod: '+ selected_mod)
-        print('change_active_mod says that the active mod has been changed to: ' + selected_mod)
+        logging.info('change_active_mod says that the active mod has been changed to: ' + selected_mod)
 
     def set_active_mod(self):
             parser = ConfigParser()
             parser.read('tp_mod.ini')
             active_mod = parser['FM']['ActiveFM']
-            print('set_active_mod says the active mod is: ' + active_mod)
+            logging.info('set_active_mod says the active mod is: ' + active_mod)
             self.active_mod = active_mod
 
     def check_installed_mods(self):
@@ -103,13 +105,13 @@ class MainApplication:
         parser.read('tp_mod.ini')
         mod_directory = parser['Paths']['fmpath']
         installed_mods = next(os.walk(mod_directory))[1]
-        print(next(os.walk(mod_directory))[1])
+        logging.info(next(os.walk(mod_directory))[1])
         return installed_mods
 
     def set_selected_mod(self, event):
         for i in event.widget.curselection():
             selected_mod = event.widget.get(i)
-        print('check_selected_mod says the selected mod is: ' + selected_mod)
+        logging.info('check_selected_mod says the selected mod is: ' + selected_mod)
         self.selected_mod = selected_mod
 
     def get_mod_quality_setting(self):
@@ -120,7 +122,7 @@ class MainApplication:
         parser.read('tp_mod.ini')
         if parser.has_option('FM','UseRecommendedQuality') and (parser['FM']['UseRecommendedQuality'] == 'true'):
             mod_quality_setting = parser['FM']['UseRecommendedQuality']
-            print('get_mod_quality_setting says the quality setting is: ' + mod_quality_setting)
+            logging.info('get_mod_quality_setting says the quality setting is: ' + mod_quality_setting)
             return True
         else:
             return False
@@ -129,15 +131,15 @@ class MainApplication:
         '''
         Sets the user's tp_mod.ini UseRecommendedQuality setting to true or false.
         '''
-        print('UseRecommendedQuality checkbox clicked')
+        logging.info('UseRecommendedQuality checkbox clicked')
         parser = ConfigParser()
         parser.read('tp_mod.ini')
         if parser.has_option('FM','UseRecommendedQuality') and (parser['FM']['UseRecommendedQuality'] == 'true'):
             parser['FM']['UseRecommendedQuality'] = 'false'
-            print('UseRecommendedQuality set to FALSE')
+            logging.info('UseRecommendedQuality set to FALSE')
         else:
             parser['FM']['UseRecommendedQuality'] = 'true'
-            print('UseRecommendedQuality set to TRUE')
+            logging.info('UseRecommendedQuality set to TRUE')
         with open('tp_mod.ini', 'w') as new_config_file:
             parser.write(new_config_file)
 
@@ -146,9 +148,10 @@ class MainApplication:
         Checks for files which the app is dependent on and displays appropriate error messages based on results.
         '''
         if os.path.exists('tp_mod.ini'):
-            print('dependency_validation says found tp_mod.ini')
+            logging.info('dependency_validation says found tp_mod.ini')
         else:
             messagebox.showerror('Trespasser Mod Manager - ERROR', 'tp_mod.ini not found. Make sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
+            logging.critical('tp_mod.ini not found')
             raise SystemExit
 
 if __name__ == '__main__':
