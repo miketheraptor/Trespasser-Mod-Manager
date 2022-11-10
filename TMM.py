@@ -16,7 +16,7 @@ class MainApplication:
         self.active_mod = 'not set'
         self.selected_mod = 'not set'
         self.dependency_validation()
-        self.set_active_mod()
+        self.get_active_mod()
         self.configure_gui()
 
         menubar = Menu(self.master)
@@ -39,7 +39,7 @@ class MainApplication:
         installed_mods_listbox_scrollbar.pack(side='right', fill='y', expand='false')
         installed_mods_listbox.bind('<<ListboxSelect>>', self.set_selected_mod)
 
-        active_mod_changer_button = Button(self.master, text='Set as Active Mod', command=lambda: self.change_active_mod(self.selected_mod, active_mod_text))
+        active_mod_changer_button = Button(self.master, text='Set as Active Mod', command=lambda: self.set_active_mod(self.selected_mod, active_mod_text))
         active_mod_changer_button.pack(side='bottom')
 
         self.quality_var = IntVar()
@@ -76,7 +76,7 @@ class MainApplication:
 #        tabs_bar.add(ce_settings_tab, text='CE Settings')
 #        tabs_bar.pack(expand=1, fill='both')
 
-    def change_active_mod(self, selected_mod, label):
+    def set_active_mod(self, selected_mod, label):
         '''
         Edits the tp_mod.ini to reflect the user's new mod choice.
         '''
@@ -88,14 +88,14 @@ class MainApplication:
         with open('tp_mod.ini', 'w') as new_config_file:
             parser.write(new_config_file)
         label.config(text='Active Mod: '+ selected_mod)
-        logging.info('change_active_mod says that the active mod has been changed to: ' + selected_mod)
+        logging.info('set_active_mod says that the active mod has been changed to: ' + selected_mod)
 
-    def set_active_mod(self):
-            parser = ConfigParser()
-            parser.read('tp_mod.ini')
-            active_mod = parser['FM']['ActiveFM']
-            logging.info('set_active_mod says the active mod is: ' + active_mod)
-            self.active_mod = active_mod
+    def get_active_mod(self):
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        active_mod = parser['FM']['ActiveFM']
+        logging.info('get_active_mod says the active mod is: ' + active_mod)
+        self.active_mod = active_mod
 
     def check_installed_mods(self):
         '''
