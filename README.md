@@ -1,14 +1,17 @@
 # Trespasser Mod Manager (TMM)
-The GUI-based utility for managing Trespasser mods.
+**The GUI-based utility for managing Trespasser mods.**
 
 TMM simplifies the process of toggling the active mod in Trespasser by providing a GUI and removing the need to manually edit config files.
 
-![alt text](https://cdn.discordapp.com/attachments/832800099653517366/1040001707108741240/TMM_v035screenshot.png "TMM v0.3.4 Screenshot")
+## Features
+* Shows a list of all installed mods
+* Allows the user to select and set the active mod
+* Allows the user to launch the game from directly within the app
+* Allows the user to toggle the ```UseRecommendedQuality``` setting
 
-The Trespasser Mod Manager (TMM) performs the following functions:
-* Reads the tp_mod.ini to determine the ```activefm``` (Active Mod)
-* Reads the tp_mod.ini to determine the ```fmpath``` (Mod Directory)
-* Checks the contents of the ```fmpath``` directory to generate a list of available mods
-* When prompted by the user, edits the tp_mod.ini to change the Active Mod
-* When prompted by the user, launches Trespasser CE
-    
+## Installation
+To install, place TMM.exe into the Trespasser CE directory (the same folder where the Trespasser CE exe is located)
+
+## Screenshots
+![alt text](https://cdn.discordapp.com/attachments/832800099653517366/1040001707108741240/TMM_v035screenshot.png "TMM v0.3.4 Screenshot")
+![alt text](https://cdn.discordapp.com/attachments/505799931412611082/1042059211896533082/TMM_v036screenshot.png "TMM v0.3.6 Screenshot")
