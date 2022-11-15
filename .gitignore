@@ -2,4 +2,6 @@ mods/*
 FMs/*
 tp_mod.ini
 *.exe
+__pycache__/
 TMM_modern.py
+tmm_config.ini

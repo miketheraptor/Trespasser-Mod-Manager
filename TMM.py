@@ -1,11 +1,10 @@
 
 #Trespasser Mod Manager (TMM)
-version_number = 'v0.3.5'
+version_number = 'v0.3.6'
 
 import logging
 import os
-from site import abs_paths
-from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog, messagebox, Checkbutton, IntVar
+from tkinter import Tk, Label, Button, Listbox, Scrollbar, Menu, ttk, filedialog, messagebox, Checkbutton, IntVar, Toplevel, Entry
 from configparser import ConfigParser
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s', datefmt='%Y-%m-%d %I:%M', level=logging.INFO)
@@ -32,7 +31,7 @@ class MainApplication:
         active_mod_text.pack(side='top')
 
         installed_mods_listbox = Listbox(self.master, height=10)
-        for mod in self.check_installed_mods():
+        for mod in self.get_installed_mods():
             installed_mods_listbox.insert('end', mod)
         installed_mods_listbox.pack(expand='true', side='top', fill='both')
         installed_mods_listbox_scrollbar = Scrollbar(installed_mods_listbox)
@@ -61,9 +60,14 @@ class MainApplication:
         '''
         Opens a dialogue window with a file browser allowing the user to select their Trespasser CE EXE file and then launches the file.
         '''
-        self.exefile = filedialog.askopenfilename(initialdir='./', title='Select Trespasser CE EXE', filetypes=[('Trespasser CE','*.exe')])
-        os.startfile(self.exefile)
-        logging.info('launch_game says: Launching game')
+        parser = ConfigParser()
+        parser.read('tmm_config.ini')
+        if os.path.exists('tmm_config.ini') and parser.has_option('Paths', 'exepath') and (os.path.exists(parser['Paths']['exepath'])):
+            logging.info("launch_game says: Launching game")
+            os.startfile(parser['Paths']['exepath'])
+        else:
+            logging.info("launch_game says: Trespasser CE exe not configured.")
+            self.ce_exe_settings_prompt()
 
 #    def create_tabs(self):
 #        '''
@@ -97,7 +101,7 @@ class MainApplication:
         logging.info('get_active_mod says the active mod is: ' + active_mod)
         self.active_mod = active_mod
 
-    def check_installed_mods(self):
+    def get_installed_mods(self):
         '''
         Checks the user's tp_mod.ini to determine the fmpath folder, then checks all directories in the fmpath folder to generate a list of which mods are installed.
         '''
@@ -142,6 +146,54 @@ class MainApplication:
             logging.info('UseRecommendedQuality set to TRUE')
         with open('tp_mod.ini', 'w') as new_config_file:
             parser.write(new_config_file)
+
+    def ce_exe_settings_prompt(self):
+        '''
+        Generates a Toplevel window prompting the user to set EXE and FM paths.
+        '''
+        self.create_ini()
+        settings_window = Toplevel()
+        settings_window.title("Trespasser Mod Manager - Configuration")
+        settings_window.resizable('False','False')
+        self.master.eval(f'tk::PlaceWindow {str(settings_window)} center')
+        settings_window.grab_set()
+        settings_label = Label(master=settings_window, justify='left', wraplength=400, text="Your Trespasser CE exe hasn't been configured yet.\nFind your Trespasser CE exe file, press save, and try again.")
+        settings_label.grid(column=0, row=0, columnspan=1, sticky='w', padx=10, pady=(10,0))
+        exe_path_label = Label(master=settings_window, text="Trespasser CE Exe Path:")
+        exe_path_label.grid(column=0, row=1, sticky='w', padx=10, pady=(10,0))
+        exe_path_label2 = Label(master=settings_window, width=60, relief='sunken')
+        exe_path_label2.grid(column=0, row=2, sticky='w', padx=(10,0), pady=(0,10))
+        exe_path_button = Button(master=settings_window, text='...', command=lambda: self.get_exe_path(exe_path_label2))
+        exe_path_button.grid(column=1, row=2, sticky='w', padx=(0, 10))
+        settings_save_button = Button(master=settings_window, text="Save", command=lambda: self.set_exe_path(settings_window))
+        settings_save_button.grid(column=3, row=3, sticky='se', padx=10, pady=10)
+    
+    def create_ini(self):
+        '''
+        Create the file tmm_config.ini with blank values.
+        '''
+        parser = ConfigParser()
+        parser.add_section('Paths')
+        with open(r"tmm_config.ini", 'w') as configfile:
+            parser.write(configfile)
+
+    def get_exe_path(self, label):
+        '''
+        Opens file browser window for user selection of Tres CE exe path and updates label with path.
+        '''
+        self.exe_path = filedialog.askopenfilename(initialdir='./', title='Select Trespasser CE EXE', filetypes=[('Trespasser CE','*.exe')])
+        label.config(text=self.exe_path)
+
+    def set_exe_path(self, window):
+        '''
+        Saves user selected Tres CE exe path to tmm_config.ini and closes window.
+        '''
+        parser = ConfigParser()
+        parser.read('tmm_config.ini')
+        parser['Paths']['exepath'] = self.exe_path
+        with open(r"tmm_config.ini", 'w') as configfile:
+            parser.write(configfile)
+        window.destroy()
 
     def dependency_validation(self):
         '''
