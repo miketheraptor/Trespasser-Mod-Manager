@@ -18,12 +18,14 @@ import shutil
 logging.basicConfig(format='%(asctime)s - %(levelname)s:%(message)s',
     datefmt='%Y-%m-%d %I:%M', level=logging.INFO)
 
-def create_trespasser_ini():
-    if os.path.exists('trespasser.ini.orig'):
+
+def backup_trespasser_ini():
+    if os.path.exists('orig_trespasser.ini'):
+        logging.info('orig_trespasser.ini already exists')
         pass
     else:
         orig = r'trespasser.ini'
-        backup = r'trespasser.ini.orig'
+        backup = r'orig_trespasser.ini'
         shutil.copy(orig, backup)
         logging.info('trespasser.ini backup created')
 
@@ -127,6 +129,36 @@ def set_mod_quality_setting():
     with open('tp_mod.ini', 'w') as new_config_file:
         parser.write(new_config_file)
 
+def get_ceoptions_setting(key, value):
+    '''
+    Gets value from key in trespasser.ini.
+    '''
+    parser = ConfigParser()
+    parser.read('trespasser.ini')
+    if parser.has_option(key, value) and (parser[key][value] == 'True' or parser[key][value] == 'true'):
+        logging.info(f'{value} in {key} detected as True')
+        return True
+    elif parser.has_option(key, value) and (parser[key][value] == 'False' or parser[key][value] == 'false'):
+        logging.info(f'{value} in {key} detected as False')
+        return False
+    else:
+        logging.info(f'{value} in {key} NOT detected. Added {value} to {key}')
+        parser[key][value] = 'False'
+        with open(r"trespasser.ini", 'w') as configfile:
+            parser.write(configfile)
+
+def set_ceoptions_setting(key, value):
+    parser = ConfigParser()
+    parser.read('trespasser.ini')
+    if parser.has_option(key, value) and (parser[key][value] == 'True' or parser[key][value] == 'true'):
+        parser[key][value] = 'False'
+        logging.info(f'{value} in {key} set to False')
+    else:
+        parser[key][value] = 'True'
+        logging.info(f'{value} in {key} set to True')
+    with open('trespasser.ini', 'w') as new_config_file:
+        parser.write(new_config_file)
+
 
 class MainApplication:
     def __init__(self, master):
@@ -135,7 +167,7 @@ class MainApplication:
         self.active_mod = get_active_mod()
         self.selected_mod = get_active_mod()
         self.configure_gui()
-        create_trespasser_ini()
+        backup_trespasser_ini()
 
         # ====== Create top menu ======
 
@@ -182,35 +214,51 @@ class MainApplication:
 
         # ====== Create ce_options_frame content ======
 
-        ce_options_label = Label(ce_options_frame, text='Experimental')
+        ce_options_label = Label(ce_options_frame, text='Basic CE Options')
         ce_options_label.grid(row=0, column=0, columnspan=2)
+
+        # General Options Checkboxes
 
         general_label_frame = LabelFrame(ce_options_frame, text='General')
         general_label_frame.grid(row=1, column=0, columnspan=2, sticky='nsew', padx=10)
         ce_options_frame.columnconfigure(1, weight=1) # Makes LabelFrame fill app from left to right
 
-        options_checkbutton_1 = Checkbutton(general_label_frame, text='Set F9 as quicksave key')
-        options_checkbutton_1.grid(row=0, column=0, stick='w')
+        self.options_var_quicksave = IntVar()
+        self.options_var_quicksave.set(get_ceoptions_setting('General', 'EnableQuickSaveKey'))
+        options_ckbtn_quicksave = Checkbutton(general_label_frame, text='Set F9 as quicksave key', variable=self.options_var_quicksave, command=lambda: set_ceoptions_setting('General', 'EnableQuickSaveKey'))
+        options_ckbtn_quicksave.grid(row=0, column=0, stick='w')
 
-        options_checkbutton_2 = Checkbutton(general_label_frame, text='Allow stowing two items at a time')
-        options_checkbutton_2.grid(row=1, column=0, sticky='w')
+        self.options_var_dualstow = IntVar()
+        self.options_var_dualstow.set(get_ceoptions_setting('General', 'EnableDualStow'))
+        options_ckbtn_dualstow = Checkbutton(general_label_frame, text='Enable stowing two items at a time', variable=self.options_var_dualstow, command=lambda: set_ceoptions_setting('General', 'EnableDualStow'))
+        options_ckbtn_dualstow.grid(row=1, column=0, sticky='w')
+
+        # Display Options Checkboxes
 
         display_label_frame = LabelFrame(ce_options_frame, text='Display')
         display_label_frame.grid(row=2, column=0, columnspan=2, sticky='nsew', padx=10)
         ce_options_frame.columnconfigure(1, weight=1) # Makes LabelFrame fill app from left to right
 
-        options_checkbutton_1 = Checkbutton(display_label_frame, text='Enable refractive water effect')
-        options_checkbutton_1.grid(row=0, column=0, stick='w')
+        self.options_var_water = IntVar()
+        self.options_var_water.set(get_ceoptions_setting('DisplayDX9', 'WaterRefraction'))
+        options_ckbtn_water = Checkbutton(display_label_frame, text='Enable refractive water effect', variable=self.options_var_water, command=lambda: set_ceoptions_setting('DisplayDX9', 'WaterRefraction'))
+        options_ckbtn_water.grid(row=0, column=0, stick='w')
 
-        options_checkbutton_2 = Checkbutton(display_label_frame, text='Enable new sky rendering method')
-        options_checkbutton_2.grid(row=1, column=0, sticky='w')
+        self.options_var_sky = IntVar()
+        self.options_var_sky.set(get_ceoptions_setting('DisplayDX9', 'EnhancedSky'))
+        options_ckbtn_sky = Checkbutton(display_label_frame, text='Enable new sky rendering method', variable=self.options_var_sky, command=lambda: set_ceoptions_setting('DisplayDX9', 'EnhancedSky'))
+        options_ckbtn_sky.grid(row=1, column=0, sticky='w')
+
+        # Render Options Checkboxes
 
         render_label_frame = LabelFrame(ce_options_frame, text='Render')
         render_label_frame.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=10)
         ce_options_frame.columnconfigure(1, weight=1) # Makes LabelFrame fill app from left to right
 
-        options_checkbutton_1 = Checkbutton(render_label_frame, text='Enable refractive water effect')
-        options_checkbutton_1.grid(row=0, column=0, stick='w')
+        self.options_var_maxlod = IntVar()
+        self.options_var_maxlod.set(get_ceoptions_setting('Render', 'ForceMaxObjectDetail'))
+        options_ckbtn_maxlod = Checkbutton(render_label_frame, text='Force Maximum Level of Detail', variable=self.options_var_maxlod, command=lambda: set_ceoptions_setting('Render', 'ForceMaxObjectDetail'))
+        options_ckbtn_maxlod.grid(row=0, column=0, stick='w')
 
     def configure_gui(self):
         '''
@@ -268,16 +316,6 @@ class MainApplication:
         logging.info('Exe path has been set')
         window.destroy()
 
-    # def dependency_validation(self):
-    #     '''
-    #     Checks for files which the app is dependent on and displays appropriate error messages based on results.
-    #     '''
-    #     if os.path.exists('tp_mod.ini'):
-    #         logging.info('dependency_validation says found tp_mod.ini')
-    #     else:
-    #         messagebox.showerror('Trespasser Mod Manager - ERROR', 'tp_mod.ini not found. Make sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
-    #         logging.critical('tp_mod.ini not found')
-    #         raise SystemExit
 
 if __name__ == '__main__':
     root = Tk()
