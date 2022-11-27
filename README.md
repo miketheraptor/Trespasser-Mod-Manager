@@ -8,6 +8,7 @@ TMM simplifies the process of toggling the active mod in Trespasser by providing
 * Allows the user to select and set the active mod
 * Allows the user to launch the game from directly within the app
 * Allows the user to toggle the ```UseRecommendedQuality``` setting
+* Allows the user to toggle some basic ```trespasser.ini``` settings
 
 ## Installation
 To install, place TMM.exe into the Trespasser CE directory (the same folder where the Trespasser CE exe is located)
