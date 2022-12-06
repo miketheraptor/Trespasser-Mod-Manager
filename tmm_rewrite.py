@@ -1,91 +1,85 @@
 '''
-Trespasser Mod Manager (TMM) by MikeTheRaptor
-The GUI-based mod manager for Trespasser CE
+dependency_validation
+launch_game
+get_installed_mods
+ce_exe_settings_prompt
+install_modfromzip_prompt
+get_zip_path
+install_modfromzip_prompt
 '''
 
-VERSION_NUMBER = 'v0.5.0'
-
-from configparser import ConfigParser
-import logging
-from tkinter import Tk, ttk, Listbox
-import os
-
-
-logging.basicConfig(
-    format='%(asctime)s - %(levelname)s:%(message)s',
-    datefmt='%Y-%m-%d %I:%M',
-    level=logging.INFO)
-
-
-def get_mods():
-    parser = ConfigParser()
-    parser.read('tp_mod.ini')
-    mod_path = parser['Paths']['fmpath']
-    dir_names = next(os.walk(mod_path))[1]
-    installed_mods = []
-    for dir in dir_names:
-        installed_mods.append(Mod(dir))
-    return installed_mods
-
-
 class Mod:
-    def __init__(self, name):
+    def __init__(self, name, active=False, selected=False):
         self.name = name
+        self.active = active
+        self.selected = selected
 
-class TMMListbox():
-    '''
-    Generates a Listbox widget containing mod names.
-    '''
-    def __init__(self, master, list, row, col):
-        lb = Listbox(master, height=10)
-        for obj in list:
-            lb.insert('end', obj.name)
-        lb.grid(row=row, column=col)
+    def get_name(self):
+        return self.name
 
-class TMMNotebook():
-    def __init__(self, master, row, col):
-        tabs = ttk.Notebook(master)
-        self.mods_frm = ttk.Frame(tabs)
-        self.options_frm = ttk.Frame(tabs)
-        tabs.add(self.mods_frm, text='Mods')
-        tabs.add(self.options_frm, text='CE Options')
-        tabs.grid(row=row, column=col)
+    def set_active(self, bool):
+        self.active = bool
 
-    def get_frm(self, frame):
-        if frame == 'mods':
-            return self.mods_frm
-        elif frame == 'options':
-            return self.options_frm
+    def get_active(self):
+        return self.active
 
+    def set_selected(self, bool):
+        self.selected = bool
 
+    def get_selected(self):
+        return self.selected
 
-class MainApplication:
-    def __init__(self, master):
-        self.master = master
+class TrespasserINI:
+    def __init__(self, path='trespasser.ini'):
+        self.path = path
 
-        # ====== Configure GUI ======
+    def get_path(self):
+        return self.path
 
-        # ====== Create notebook tabs ======
+    def set_path(self, path):
+        self.path = path
 
-        tabs = TMMNotebook(master, 0, 0)
+    def create_backup(self):
+        pass
 
-        # ====== Create mods tab content ======
+class CEOptionsSetting(TrespasserINI):
+    def __init__(self):
+        pass
 
-        #  Create List of Installed Mod Objects
+    def set_bool(self, key, bool):
+        pass
 
-        installed_mods = get_mods()
+    def get_bool(self):
+        pass
 
-        # Create Listbox showing Installed Mod Object Names
+class TPModINI:
+    def __init__(self, fmpath, quality, path='tp_mod.ini'):
+        self.path = path
+        self.quality = quality
+        self.fmpath = fmpath
 
-        mods_lb = TMMListbox(tabs.get_frm('mods'), installed_mods, 0, 0)
+    def get_quality(self):
+        return self.quality
 
+    def set_quality(self, quality):
+        self.quality = quality
 
+    def get_fmpath(self):
+        return self.fmpath
 
+    def set_fmpath(self, path):
+        self.fmpath = path
 
+class ModManagerINI:
+    def __init__(self, exe_path):
+        self.exe_path = exe_path
+        pass
 
+    def create(self):
+        pass
 
+    def set_exe_path(self, exe_path):
+        self.exe_path = exe_path
 
-if __name__ == '__main__':
-    root = Tk()
-    tmm_app = MainApplication(root)
-    root.mainloop()
+    def get_exe_path(self):
+        return self.exe_path
