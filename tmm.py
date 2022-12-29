@@ -3,7 +3,7 @@ Trespasser Mod Manager (TMM) by MikeTheRaptor
 The GUI-based mod manager for Trespasser CE
 '''
 
-VERSION_NUMBER = 'v0.3.8'
+VERSION_NUMBER = 'v0.3.9'
 
 
 import logging
@@ -188,7 +188,7 @@ class MainApplication:
         menubar.add_cascade(label='File', menu=file_menu)
 
         install_menu = Menu(menubar, tearoff=0)
-        # install_menu.add_command(label='Trespasser Retail from Disc', command=self.install_tresfromcd_prompt)
+        install_menu.add_command(label='Trespasser Retail from Disc', command=self.install_tresfromcd_prompt)
         install_menu.add_command(label='Mod from Zip file', command=self.install_modfromzip_prompt)
         menubar.add_cascade(label='Install...', menu=install_menu)
 
@@ -433,47 +433,107 @@ class MainApplication:
         window.destroy()
         raise SystemExit
 
-    # def install_tresfromcd_prompt(self):
-    #     '''
-    #     Generates a Toplevel window prompting the user to install Trespasser from the disc.
-    #     '''
-    #     tresfromcd_window = Toplevel()
-    #     tresfromcd_window.title("Trespasser Mod Manager - Install Trespasser from CD")
-    #     tresfromcd_window.resizable('False','False')
-    #     self.master.eval(f'tk::PlaceWindow {str(tresfromcd_window)} center')
-    #     tresfromcd_window.grab_set()
-    #     modfromzip_label = Label(
-    #         master=tresfromcd_window,
-    #         justify='left',
-    #         wraplength=400,
-    #         text="Install Trespasser from CD.")
-    #     modfromzip_label.grid(column=0, row=0, columnspan=1, sticky='w', padx=10, pady=(10,0))
-    #     zip_path_label = Label(master=tresfromcd_window, text="Trespasser CD path:")
-    #     zip_path_label.grid(column=0, row=1, sticky='w', padx=10, pady=(10,0))
-    #     zip_path_label2 = Label(master=tresfromcd_window, width=60, relief='sunken')
-    #     zip_path_label2.grid(column=0, row=2, sticky='w', padx=(10,0), pady=(0,10))
-    #     zip_path_button = Button(
-    #         master=tresfromcd_window,
-    #         text='...',
-    #         command=lambda: self.get_trescd_path(zip_path_label2))
-    #     zip_path_button.grid(column=1, row=2, sticky='w', padx=(0, 10))
-    #     modfromzip_install_button = Button(
-    #         master=tresfromcd_window,
-    #         text="Install",
-    #         command=lambda: self.install_tresfromcd(self.trescd_path, tresfromcd_window))
-    #     modfromzip_install_button.grid(column=3, row=3, sticky='se', padx=10, pady=10)
+    def install_tresfromcd_prompt(self):
+        '''
+        Generates a Toplevel window prompting the user to install Trespasser from the disc.
+        '''
+        tresfromcd_window = Toplevel()
+        tresfromcd_window.title("Trespasser Mod Manager - Install Trespasser from CD")
+        tresfromcd_window.resizable('False','False')
+        self.master.eval(f'tk::PlaceWindow {str(tresfromcd_window)} center')
+        tresfromcd_window.grab_set()
+        tresfromcd_label = Label(
+            master=tresfromcd_window,
+            justify='left',
+            wraplength=400,
+            text="Install Trespasser from CD.")
+        tresfromcd_label.grid(column=0, row=0, columnspan=1, sticky='w', padx=10, pady=(10,0))
+        cd_path_label = Label(master=tresfromcd_window, text="Trespasser CD path:")
+        cd_path_label.grid(column=0, row=1, sticky='w', padx=10, pady=(10,0))
+        cd_path_label2 = Label(master=tresfromcd_window, width=60, relief='sunken')
+        cd_path_label2.grid(column=0, row=2, sticky='w', padx=(10,0), pady=(0,10))
+        cd_path_button = Button(
+            master=tresfromcd_window,
+            text='...',
+            command=lambda: self.get_trescd_path(cd_path_label2))
+        cd_path_button.grid(column=1, row=2, sticky='w', padx=(0, 10))
+        tresfromcd_install_button = Button(
+            master=tresfromcd_window,
+            text="Install",
+            command=lambda: self.install_tresfromcd(self.trescd_path, tresfromcd_window))
+        tresfromcd_install_button.grid(column=3, row=3, sticky='se', padx=10, pady=10)
 
-    # def install_tresfromcd(self, path, window):
-    #     os.mkdir('Trespasser')
-    #     files = os.listdir(path)
-    #     for file in files:
-    #         shutil.copy2(os.path.join(path, file), 'Trespasser')
+    def install_tresfromcd(self, path, window):
+        fmpath = get_fmpath()
+        retail_files = [
+            'as.GRF',
+            'as.scn',
+            'as.wtd',
+            'as2.grf',
+            'as2.scn',
+            'as2-130.pid',
+            'as2-130.spz',
+            'as4.wtd',
+            'as-130.pid',
+            'as-130.spz',
+            'be.GRF',
+            'be.scn',
+            'be.wtd',
+            'be-130.pid',
+            'be-130.spz',
+            'ij.GRF',
+            'ij.scn',
+            'ij.wtd',
+            'ij-130.pid',
+            'ij-130.spz',
+            'it.GRF',
+            'IT.scn',
+            'it.wtd',
+            'it-130.pid',
+            'it-130.spz',
+            'jr.GRF',
+            'jr.scn',
+            'jr.wtd',
+            'jr-130.pid',
+            'jr-130.spz',
+            'lab.GRF',
+            'lab.scn',
+            'lab.wtd',
+            'lab-130.pid',
+            'lab-130.spz',
+            'sum.GRF',
+            'sum.scn',
+            'sum.wtd',
+            'sum-130.pid',
+            'sum-130.spz',
+            'testscene.GRF',
+            'TestScene.scn',
+            'testScene.wtd',
+            'TestScene-130.pid',
+            'TestScene-130.spz',
+            'testscnnght.GRF',
+            'TestScnNght.scn',
+            'TestScnNght-130.pid',
+            'TestScnNght-130.spz']
+        os.makedirs(f'{fmpath}/Trespasser')
+        files = os.listdir(path)
+        for root, dirs, files in os.walk(path):
+            for _file in files:
+               if _file in retail_files:
+                    shutil.copy(os.path.abspath(root + '/' + _file), f'{fmpath}/Trespasser')
+        shutil.copytree(f'{path}/data/menu', f'{fmpath}/Trespasser/menu')
+        logging.info('Installed Trespasser')
+        messagebox.showinfo(
+            title="Trespasser Mod Manager - Installation Complete!",
+            message="Trespasser installed! Please restart Trespasser Mod Manager")
+        window.destroy()
+        raise SystemExit
 
-    # def get_trescd_path(self, label):
-    #     self.trescd_path = filedialog.askdirectory(
-    #         initialdir='./',
-    #         title='Select Trespasser CD')
-    #     label.config(text=self.trescd_path)
+    def get_trescd_path(self, label):
+        self.trescd_path = filedialog.askdirectory(
+            initialdir='./',
+            title='Select Trespasser CD')
+        label.config(text=self.trescd_path)
 
 
 if __name__ == '__main__':
