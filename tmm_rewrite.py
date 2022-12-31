@@ -6,9 +6,6 @@ The GUI-based mod manager for Trespasser CE
 VERSION_NUMBER = 'v1.0.0'
 
 from configparser import ConfigParser
-import logging
-import os
-import shutil
 from tkinter import (
     Button,
     Canvas,
@@ -28,6 +25,9 @@ from tkinter import (
     ttk,
     Scrollbar
     )
+import logging
+import os
+import shutil
 import zipfile
 
 
@@ -106,6 +106,9 @@ class MainApplication:
         tabs_bar = ttk.Notebook(parent, padding=5)
         mods_frm = ttk.Frame(tabs_bar, padding=10)
         options_frm = ttk.Frame(tabs_bar, padding=10)
+        options_frm.grid_rowconfigure(0, weight=1) # req for scrollable frame
+        options_frm.grid_columnconfigure(0, weight=1) # req for scrollable frame
+        options_frm.grid_propagate(False) # req for scrollable frame
         tabs_bar.add(mods_frm, text='Mods')
         tabs_bar.add(options_frm, text='CE Options')
         tabs_bar.grid(row=4, column=0)
@@ -146,7 +149,14 @@ class MainApplication:
         # Mod Info Text
 
         global info_txt
-        info_txt = Text(smod_lfrm, height=10, width=30, bg='#F3F3F3')
+        info_txt = Text(
+            smod_lfrm,
+            height=10,
+            width=35,
+            bg='#F3F3F3',
+            wrap='word',
+            font=('MS Sans Serif', 10)
+            )
         info_txt.insert(constants.INSERT, "No Mod Selected")
         info_txt.config(state='disabled')
         info_txt.grid(row=0, column=0, padx=(5, 0), pady=5)
@@ -173,15 +183,19 @@ class MainApplication:
 
         # CE Options Canvas (required for scrolling)
 
-        options_cnvs = Canvas(options_frm, highlightthickness=0, height=225, width=420)
+        options_cnvs = Canvas(
+            options_frm,
+            highlightthickness=0,
+            height=225,
+            width=420,
+            )
         options_cnvs.grid(row=0, column=0)
         options_cnvs.grid_columnconfigure(0)
         options_cnvs.grid_rowconfigure(0)
-        options_cnvs.grid_propagate(False) # prevents the canvas from expanding or shrinking to fit contents
 
         # CE Options Scrollbar
 
-        options_sb = Scrollbar(options_frm, command=options_cnvs.yview)
+        options_sb = Scrollbar(options_frm, orient='vertical', command=options_cnvs.yview)
         options_sb.grid(row=0, column=1, sticky='ns')
         options_cnvs.configure(yscrollcommand=options_sb.set)
         options_cnvs.bind('<Configure>', lambda e: options_cnvs.configure(scrollregion=options_cnvs.bbox("all")))
@@ -190,13 +204,37 @@ class MainApplication:
 
         options_ifrm = Frame(options_cnvs)
         options_cnvs.create_window((0, 0), window=options_ifrm, anchor='nw')
+        options_ifrm.grid_columnconfigure(0, weight=1)
 
         # === Generate Options Widgets ===
+
+        options_lbl = Label(options_ifrm, text='Basic CE Options')
+        options_lbl.grid(row=0, column=0)
+
+        # hack to get lframes to fill window ...
+        options_spacer = Label(
+            options_ifrm,
+            text='                                                                                                       '
+            )
+        options_spacer.grid(row=0, column=1)
+
 
         # = General Options =
 
         general_lfrm = LabelFrame(options_ifrm, text='General')
-        general_lfrm.grid(row=0, column=0, sticky='we')
+        general_lfrm.grid(row=1, column=0, columnspan=2, sticky='we')
+
+        # Cheats Checkbutton
+
+        self.ce_cheats_var = IntVar()
+        self.ce_cheats_var.set(self.get_ceoption_int('Debug', 'LogDevInfo', '99'))
+        ce_cheats_cb = Checkbutton(
+            general_lfrm,
+            variable=self.ce_cheats_var,
+            command=lambda: self.set_ceoption_int('Debug', 'LogDevInfo', '99'),
+            text='Enable cheats'
+        )
+        ce_cheats_cb.grid(row=0, column=0, sticky='w')
 
         # Quicksave Checkbutton
 
@@ -208,7 +246,7 @@ class MainApplication:
             command=lambda: self.set_ceoption_bool('General', 'EnableQuickSaveKey'),
             text='Set F9 as quicksave key'
         )
-        ce_quicksave_cb.grid(row=0, column=0, sticky='w')
+        ce_quicksave_cb.grid(row=1, column=0, sticky='w')
 
         # Dualstow Checkbutton
 
@@ -220,12 +258,12 @@ class MainApplication:
             command=lambda: self.set_ceoption_bool('General', 'EnableDualStow'),
             text='Enable stowing two items at a time'
         )
-        ce_dualstow_cb.grid(row=1, column=0, sticky='w')
+        ce_dualstow_cb.grid(row=2, column=0, sticky='w')
 
         # = Display Options =
 
         display_lfrm = LabelFrame(options_ifrm, text='Display')
-        display_lfrm.grid(row=1, column=0, sticky='nsew')
+        display_lfrm.grid(row=2, column=0, columnspan=2, sticky='nsew')
 
         # Water Checkbutton
 
@@ -254,7 +292,7 @@ class MainApplication:
         # = Render Options =
 
         render_lfrm = LabelFrame(options_ifrm, text='Render')
-        render_lfrm.grid(row=2, column=0, sticky='nsew')
+        render_lfrm.grid(row=3, column=0, columnspan=2, sticky='nsew')
 
         # ForceMaxObjectDetail Checkbutton
 
@@ -266,7 +304,7 @@ class MainApplication:
             command=lambda: self.set_ceoption_bool('Render', 'ForceMaxObjectDetail'),
             text='Force maximum level of detail'
         )
-        ce_maxlod_cb.grid(row=0, column=0, sticky='w')     
+        ce_maxlod_cb.grid(row=0, column=0, sticky='w')
 
     # ====== TMM Functions ======
 
@@ -339,6 +377,44 @@ class MainApplication:
             logging.info(f'{value} in {key} set to False')
         else:
             parser[key][value] = 'True'
+            logging.info(f'{value} in {key} set to True')
+        with open('trespasser.ini', 'w') as new_config_file:
+            parser.write(new_config_file)
+
+
+    def get_ceoption_int(self, key, value, on_value):
+        '''
+        Gets int value from key in trespasser.ini.
+        '''
+        # on_value key for different int based settings
+        # Debug, LogDevInfo, on_value=99
+        # Game, EnableAiActivityEx, on_value=-1
+        parser = ConfigParser()
+        parser.read('trespasser.ini')
+        if parser.has_option(key, value) and parser[key][value] == on_value:
+            logging.info(f'{value} in {key} detected as True')
+            return True
+        elif parser.has_option(key, value) and parser[key][value] != on_value:
+            logging.info(f'{value} in {key} detected as False')
+            return False
+        else:
+            logging.info(f'{value} in {key} NOT detected. Added {value} to {key}')
+            parser.add_section('Debug')
+            parser[key][value] = '0'
+            with open(r"trespasser.ini", 'w') as configfile:
+                parser.write(configfile)
+
+    def set_ceoption_int(self, key, value, on_value):
+        '''
+        Sets int value for key in trespasser.ini.
+        '''
+        parser = ConfigParser()
+        parser.read('trespasser.ini')
+        if parser.has_option(key, value) and parser[key][value] == on_value:
+            parser[key][value] = '0'
+            logging.info(f'{value} in {key} set to False')
+        else:
+            parser[key][value] = on_value
             logging.info(f'{value} in {key} set to True')
         with open('trespasser.ini', 'w') as new_config_file:
             parser.write(new_config_file)
