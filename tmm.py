@@ -679,7 +679,7 @@ class MainApplication:
                 )
         else:
                 
-            # Promp user for Tres CD directory path
+            # Prompt user for Tres CD directory path
 
             cdpath = filedialog.askdirectory(
                 initialdir='./',
