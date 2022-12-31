@@ -3,541 +3,774 @@ Trespasser Mod Manager (TMM) by MikeTheRaptor
 The GUI-based mod manager for Trespasser CE
 '''
 
-VERSION_NUMBER = 'v0.3.9'
+VERSION_NUMBER = 'v1.0.0'
 
-
+from configparser import ConfigParser
+from tkinter import (
+    Button,
+    Canvas,
+    constants,
+    Checkbutton,
+    filedialog,
+    Frame,
+    IntVar,
+    Label,
+    LabelFrame,
+    Listbox,
+    Menu,
+    messagebox,
+    Text,
+    Tk,
+    Toplevel,
+    ttk,
+    Scrollbar
+    )
 import logging
 import os
 import shutil
 import zipfile
-from tkinter import (Tk, Label, Button, Listbox, Scrollbar, Menu, ttk,
-    filedialog, messagebox, Checkbutton, IntVar, Toplevel, LabelFrame)
-from configparser import ConfigParser
 
 
+def validation():
+    '''
+    Checks for dependencies and throws exceptions or launches app
+    '''
+    if not os.path.exists('tp_mod.ini'):
+        messagebox.showerror(
+            'Trespasser Mod Manager - ERROR',
+            'tp_mod.ini not found.\nMake sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
+        logging.critical('tp_mod.ini not found')
+        raise SystemExit
+    elif not os.path.exists('trespasser.ini'):
+        messagebox.showerror('Trespasser Mod Manager - ERROR', 'trespasser.ini not found.\nMake sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
+        logging.critical('trespasser.ini not found')
+        raise SystemExit
+    else:
+        logging.info('tp_mod.ini and trespasser.ini found')
+
+
+# Initialize Logging Settings
 logging.basicConfig(
     format='%(asctime)s - %(levelname)s:%(message)s',
     datefmt='%Y-%m-%d %I:%M',
     level=logging.INFO)
-
-
-def backup_trespasser_ini():
-    if os.path.exists('orig_trespasser.ini'):
-        logging.info('orig_trespasser.ini already exists')
-        pass
-    else:
-        orig = r'trespasser.ini'
-        backup = r'orig_trespasser.ini'
-        shutil.copy(orig, backup)
-        logging.info('trespasser.ini backup created')
-
-def create_tmm_ini():
-    '''
-    Create the file tmm_config.ini with blank values.
-    '''
-    parser = ConfigParser()
-    parser.add_section('Paths')
-    with open(r"tmm_config.ini", 'w') as configfile:
-        parser.write(configfile)
-
-def dependency_validation():
-    '''
-    Checks for files which the app is dependent on and displays appropriate error messages based on results.
-    '''
-    if os.path.exists('tp_mod.ini'):
-        logging.info('dependency_validation says found tp_mod.ini')
-    else:
-        messagebox.showerror(
-            'Trespasser Mod Manager - ERROR',
-            'tp_mod.ini not found. Make sure that you are using Trespasser CE and that TMM.exe has been placed in the same directory as your Trespasser CE exe.')
-        logging.critical('tp_mod.ini not found')
-        raise SystemExit
-    if os.path.exists('trespasser.ini'):
-        logging.info('trespasser.ini found')
-    else:
-        messagebox.showerror('Trespasser Mod Manager - ERROR', 'trespasser.ini not found.')
-        logging.critical('trespasser.ini not found')
-        raise SystemExit
-
-def launch_game():
-    '''
-    Opens a dialogue window with a file browser allowing the user to select their Trespasser CE EXE file and then launches the file.
-    '''
-    parser = ConfigParser()
-    parser.read('tmm_config.ini')
-    if os.path.exists('tmm_config.ini') and parser.has_option('Paths', 'exepath') and (os.path.exists(parser['Paths']['exepath'])):
-        logging.info("launch_game says: Launching game")
-        os.startfile(parser['Paths']['exepath'])
-    else:
-        logging.info("launch_game says: Trespasser CE exe not configured.")
-        tmm_app.ce_exe_settings_prompt()
-
-def get_active_mod():
-    parser = ConfigParser()
-    parser.read('tp_mod.ini')
-    active_mod = parser['FM']['ActiveFM']
-    logging.info('get_active_mod says the active mod is: ' + active_mod)
-    return active_mod
-
-def set_active_mod(selected_mod, label):
-    '''
-    Edits the tp_mod.ini to reflect the user's new mod choice.
-    '''
-    parser = ConfigParser()
-    parser.read('tp_mod.ini')
-    parser['FM']['ActiveFM'] = selected_mod
-    with open('tp_mod.ini', 'w') as new_config_file:
-        parser.write(new_config_file)
-    label.config(text='Active Mod: '+ selected_mod)
-    logging.info('set_active_mod says that the active mod has been changed to: ' + selected_mod)
-
-def get_fmpath():
-    '''
-    Return the FMPath from the tp_mod.ini
-    '''
-    parser = ConfigParser()
-    parser.read('tp_mod.ini')
-    mod_directory = parser['Paths']['fmpath']
-    return mod_directory
-
-def get_installed_mods():
-    '''
-    Return a list of all installed mods in fmpath directory
-    '''
-    parser = ConfigParser()
-    parser.read('tp_mod.ini')
-    mod_directory = parser['Paths']['fmpath']
-    installed_mods = next(os.walk(mod_directory))[1]
-    logging.info(next(os.walk(mod_directory))[1])
-    return installed_mods
-
-def get_mod_quality_setting():
-    '''
-    Gets the user's tp_mod.ini UseRecommendedQuality setting.
-    '''
-    parser = ConfigParser()
-    parser.read('tp_mod.ini')
-    if parser.has_option('FM','UseRecommendedQuality') and (parser['FM']['UseRecommendedQuality'] == 'true'):
-        mod_quality_setting = parser['FM']['UseRecommendedQuality']
-        logging.info('get_mod_quality_setting says the quality setting is: ' + mod_quality_setting)
-        return True
-    else:
-        return False
-
-def set_mod_quality_setting():
-    '''
-    Sets the user's tp_mod.ini UseRecommendedQuality setting to true or false.
-    '''
-    logging.info('UseRecommendedQuality checkbox clicked')
-    parser = ConfigParser()
-    parser.read('tp_mod.ini')
-    if parser.has_option('FM','UseRecommendedQuality') and (parser['FM']['UseRecommendedQuality'] == 'true'):
-        parser['FM']['UseRecommendedQuality'] = 'false'
-        logging.info('UseRecommendedQuality set to FALSE')
-    else:
-        parser['FM']['UseRecommendedQuality'] = 'true'
-        logging.info('UseRecommendedQuality set to TRUE')
-    with open('tp_mod.ini', 'w') as new_config_file:
-        parser.write(new_config_file)
-
-def get_ceoptions_setting(key, value):
-    '''
-    Gets value from key in trespasser.ini.
-    '''
-    parser = ConfigParser()
-    parser.read('trespasser.ini')
-    if parser.has_option(key, value) and (parser[key][value] == 'True' or parser[key][value] == 'true'):
-        logging.info(f'{value} in {key} detected as True')
-        return True
-    elif parser.has_option(key, value) and (parser[key][value] == 'False' or parser[key][value] == 'false'):
-        logging.info(f'{value} in {key} detected as False')
-        return False
-    else:
-        logging.info(f'{value} in {key} NOT detected. Added {value} to {key}')
-        parser[key][value] = 'False'
-        with open(r"trespasser.ini", 'w') as configfile:
-            parser.write(configfile)
-
-def set_ceoptions_setting(key, value):
-    parser = ConfigParser()
-    parser.read('trespasser.ini')
-    if parser.has_option(key, value) and (parser[key][value] == 'True' or parser[key][value] == 'true'):
-        parser[key][value] = 'False'
-        logging.info(f'{value} in {key} set to False')
-    else:
-        parser[key][value] = 'True'
-        logging.info(f'{value} in {key} set to True')
-    with open('trespasser.ini', 'w') as new_config_file:
-        parser.write(new_config_file)
-
+    
 
 class MainApplication:
-    def __init__(self, master):
-        self.master = master
-        dependency_validation()
-        self.active_mod = get_active_mod()
-        self.selected_mod = get_active_mod()
-        self.configure_gui()
-        backup_trespasser_ini()
+    def __init__(self, parent, *args, **kwargs):
+
+        # Initialization
+        self.parent = parent
+        self.selected_mod = self.get_active_mod()
+        self.active_mod = self.get_active_mod()
+        self.launch_on_save = False
+        self.backup_trespasser_ini()
+
+
+        # Configure Main Window
+        self.parent.title(f'Trespasser Mod Manager {VERSION_NUMBER}')
+        self.parent.resizable(False, False)
 
         # ====== Create top menu ======
 
-        menubar = Menu(self.master)
+        menubar = Menu(self.parent)
         file_menu = Menu(menubar, tearoff=0)
-        file_menu.add_command(label='Exit', command=self.master.destroy)
+        file_menu.add_command(label='Settings', command=self.open_settings)
+        file_menu.add_separator()
+        file_menu.add_command(label='Exit', command=self.parent.destroy)
         menubar.add_cascade(label='File', menu=file_menu)
 
         install_menu = Menu(menubar, tearoff=0)
-        install_menu.add_command(label='Trespasser Retail from Disc', command=self.install_tresfromcd_prompt)
-        install_menu.add_command(label='Mod from Zip file', command=self.install_modfromzip_prompt)
+        install_menu.add_command(label='Trespasser Retail from Disc', command=self.install_retail)
+        install_menu.add_command(label='Mod from Zip file', command=self.install_mfz)
         menubar.add_cascade(label='Install...', menu=install_menu)
 
-        self.master.config(menu=menubar)
+        self.parent.config(menu=menubar)
 
-        # ====== Create game launch button ======
+        # ====== Create header ====== #
 
-        launch_button = Button(
-            self.master,
-            text='Launch Trespasser CE',
-            command=lambda: launch_game())
-        launch_button.pack(side='top', padx=5, pady=5)
+        separator = ttk.Separator(parent, orient='horizontal')
+        separator.grid(row=0, column=0, sticky='we')
+
+        launch_btn = Button(parent, command=self.launch_game, text='Launch Trespasser CE')
+        launch_btn.grid(row=1, column=0, padx=10, pady=(10,5))
+
+        amod_lbl = Label(text=f'Active: {self.active_mod}')
+        amod_lbl.grid(row=2, column=0)
+
+        separator = ttk.Separator(parent, orient='horizontal')
+        separator.grid(row=3, column=0, sticky='we', pady=5)
 
         # ====== Create notebook tabs ======
 
-        tabs_bar = ttk.Notebook(self.master)
-        mods_frame = ttk.Frame(tabs_bar)
-        ce_options_frame = ttk.Frame(tabs_bar)
-        tabs_bar.add(mods_frame, text='Mods')
-        tabs_bar.add(ce_options_frame, text='CE Options')
-        tabs_bar.pack(expand=1, fill='both')
+        tabs_bar = ttk.Notebook(parent, padding=5)
+        mods_frm = ttk.Frame(tabs_bar, padding=10)
+        options_frm = ttk.Frame(tabs_bar, padding=10)
+        options_frm.grid_rowconfigure(0, weight=1) # req for scrollable frame
+        options_frm.grid_columnconfigure(0, weight=1) # req for scrollable frame
+        options_frm.grid_propagate(False) # req for scrollable frame
+        tabs_bar.add(mods_frm, text='Mods')
+        tabs_bar.add(options_frm, text='CE Options')
+        tabs_bar.grid(row=4, column=0)
 
-        # ====== Create mods_frame content ======
+        # ====== Create Mods tab content ======
 
-        active_mod_text = Label(
-            mods_frame,
-            text=f'Active Mod: {self.active_mod}')
-        active_mod_text.pack(side='top')
+        # === Installed Mods Frame ===
 
-        installed_mods_listbox = Listbox(mods_frame, height=10)
-        for mod in get_installed_mods():
-            installed_mods_listbox.insert('end', mod)
-        installed_mods_listbox.pack(expand='true', side='top', fill='both', padx=10, pady=5)
-        installed_mods_listbox_scrollbar = Scrollbar(installed_mods_listbox)
-        installed_mods_listbox_scrollbar.pack(side='right', fill='y', expand='false')
-        installed_mods_listbox.config(yscrollcommand=installed_mods_listbox_scrollbar.set)
-        installed_mods_listbox_scrollbar.config(command=installed_mods_listbox.yview)
-        installed_mods_listbox.bind('<<ListboxSelect>>', self.set_selected_mod)
+        imods_lfrm = LabelFrame(mods_frm, text='Installed Mods')
+        imods_lfrm.grid(row=0, column=0, padx=(0, 2.5))
 
-        active_mod_changer_button = Button(
-            mods_frame,
-            text='Set Selected as Active Mod',
-            command=lambda: set_active_mod(self.selected_mod, active_mod_text))
-        active_mod_changer_button.pack(side='top')
+        # Listbox & Scrollbar
+
+        mods_lb = Listbox(imods_lfrm, height=10)
+        mods_sb = Scrollbar(imods_lfrm)
+        mods_lb.config(yscrollcommand=mods_sb.set)
+        mods_sb.config(command=mods_lb.yview)
+        mods_lb.grid(row=0, column=0, padx=(5,0), pady=5)
+        mods_sb.grid(row=0, column=1, padx=(0,5), pady=2.5, sticky='ns')
+        mods_lb.bind('<<ListboxSelect>>', self.set_selected_mod)
+
+        # Populate Listbox
+
+        imods_lst = self.get_installed_mods()
+        for mod in imods_lst:
+            mods_lb.insert('end', mod)
+
+        # Active Mod Button
+
+        set_mod_btn = Button(imods_lfrm, text='Set Active Mod', command=lambda: self.set_active_mod(self.selected_mod, amod_lbl))
+        set_mod_btn.grid(row=1, column=0, columnspan=2, padx=5, pady=(2.5,5))
+
+        # === Selected Mod Frame ===
+
+        smod_lfrm = LabelFrame(mods_frm, text='Selected Mod Info')
+        smod_lfrm.grid(row=0, column=1, padx=(2.5, 0))
+
+        # Mod Info Text
+
+        global info_txt
+        info_txt = Text(
+            smod_lfrm,
+            height=10,
+            width=35,
+            bg='#F3F3F3',
+            wrap='word',
+            font=('MS Sans Serif', 10)
+            )
+        info_txt.insert(constants.INSERT, "No Mod Selected")
+        info_txt.config(state='disabled')
+        info_txt.grid(row=0, column=0, padx=(5, 0), pady=5)
+        info_sb = Scrollbar(smod_lfrm, command=info_txt.yview)
+        info_sb.grid(row=0, column=2, padx=(0, 5), pady=2.5, sticky='ns')
+        info_txt.configure(yscrollcommand=info_sb.set)
+
+        # Mod Quality Checkbutton
 
         self.quality_var = IntVar()
-        self.quality_var.set(get_mod_quality_setting())
-        mod_quality_setting_toggle = Checkbutton(
-            mods_frame,
-            text='Use Recommended Quality Settings from Active Mod',
+        self.quality_var.set(self.get_quality())
+        quality_cb = Checkbutton(
+            smod_lfrm,
             variable=self.quality_var,
             onvalue=1,
             offvalue=0,
-            command=set_mod_quality_setting)
-        mod_quality_setting_toggle.pack(side='bottom')
+            text='Use Recommended Quality Settings',
+            command=self.set_quality)
+        quality_cb.grid(row=1, column=0, columnspan=2, padx=5, pady=(2.5,5.5))
 
-        # ====== Create ce_options_frame content ======
+        # ====== Create CE Options tab content ======
 
-        ce_options_label = Label(ce_options_frame, text='Basic CE Options')
-        ce_options_label.grid(row=0, column=0, columnspan=2)
+        # === Generate Scrollable Frame ===
 
-        # General Options Checkboxes
+        # CE Options Canvas (required for scrolling)
 
-        general_label_frame = LabelFrame(ce_options_frame, text='General')
-        general_label_frame.grid(row=1, column=0, columnspan=2, sticky='nsew', padx=10)
-        ce_options_frame.columnconfigure(1, weight=1) # Makes LabelFrame fill app from left to right
+        options_cnvs = Canvas(
+            options_frm,
+            highlightthickness=0,
+            height=225,
+            width=420,
+            )
+        options_cnvs.grid(row=0, column=0)
+        options_cnvs.grid_columnconfigure(0)
+        options_cnvs.grid_rowconfigure(0)
 
-        self.options_var_quicksave = IntVar()
-        self.options_var_quicksave.set(get_ceoptions_setting('General', 'EnableQuickSaveKey'))
-        options_ckbtn_quicksave = Checkbutton(
-            general_label_frame,
-            text='Set F9 as quicksave key',
-            variable=self.options_var_quicksave,
-            command=lambda: set_ceoptions_setting('General', 'EnableQuickSaveKey'))
-        options_ckbtn_quicksave.grid(row=0, column=0, stick='w')
+        # CE Options Scrollbar
 
-        self.options_var_dualstow = IntVar()
-        self.options_var_dualstow.set(get_ceoptions_setting('General', 'EnableDualStow'))
-        options_ckbtn_dualstow = Checkbutton(
-            general_label_frame,
-            text='Enable stowing two items at a time',
-            variable=self.options_var_dualstow,
-            command=lambda: set_ceoptions_setting('General', 'EnableDualStow'))
-        options_ckbtn_dualstow.grid(row=1, column=0, sticky='w')
+        options_sb = Scrollbar(options_frm, orient='vertical', command=options_cnvs.yview)
+        options_sb.grid(row=0, column=1, sticky='ns')
+        options_cnvs.configure(yscrollcommand=options_sb.set)
+        options_cnvs.bind('<Configure>', lambda e: options_cnvs.configure(scrollregion=options_cnvs.bbox("all")))
 
-        # Display Options Checkboxes
+        # CE Options Inner Library Frame (required for scrolling)
 
-        display_label_frame = LabelFrame(ce_options_frame, text='Display')
-        display_label_frame.grid(row=2, column=0, columnspan=2, sticky='nsew', padx=10)
-        ce_options_frame.columnconfigure(1, weight=1) # Makes LabelFrame fill app from left to right
+        options_ifrm = Frame(options_cnvs)
+        options_cnvs.create_window((0, 0), window=options_ifrm, anchor='nw')
+        options_ifrm.grid_columnconfigure(0, weight=1)
 
-        self.options_var_water = IntVar()
-        self.options_var_water.set(get_ceoptions_setting('DisplayDX9', 'WaterRefraction'))
-        options_ckbtn_water = Checkbutton(
-            display_label_frame,
-            text='Enable refractive water effect',
-            variable=self.options_var_water,
-            command=lambda: set_ceoptions_setting('DisplayDX9', 'WaterRefraction'))
-        options_ckbtn_water.grid(row=0, column=0, stick='w')
+        # === Generate Options Widgets ===
 
-        self.options_var_sky = IntVar()
-        self.options_var_sky.set(get_ceoptions_setting('DisplayDX9', 'EnhancedSky'))
-        options_ckbtn_sky = Checkbutton(
-            display_label_frame,
-            text='Enable new sky rendering method',
-            variable=self.options_var_sky,
-            command=lambda: set_ceoptions_setting('DisplayDX9', 'EnhancedSky'))
-        options_ckbtn_sky.grid(row=1, column=0, sticky='w')
+        options_lbl = Label(options_ifrm, text='Basic CE Options')
+        options_lbl.grid(row=0, column=0, pady=(0, 5))
 
-        # Render Options Checkboxes
+        # hack to get lframes to fill window ...
+        options_spacer = Label(
+            options_ifrm,
+            text='                                                                                                       '
+            )
+        options_spacer.grid(row=0, column=1)
 
-        render_label_frame = LabelFrame(ce_options_frame, text='Render')
-        render_label_frame.grid(row=3, column=0, columnspan=2, sticky='nsew', padx=10)
-        ce_options_frame.columnconfigure(1, weight=1) # Makes LabelFrame fill app from left to right
 
-        self.options_var_maxlod = IntVar()
-        self.options_var_maxlod.set(get_ceoptions_setting('Render', 'ForceMaxObjectDetail'))
-        options_ckbtn_maxlod = Checkbutton(
-            render_label_frame,
-            text='Force maximum level of detail',
-            variable=self.options_var_maxlod,
-            command=lambda: set_ceoptions_setting('Render', 'ForceMaxObjectDetail'))
-        options_ckbtn_maxlod.grid(row=0, column=0, stick='w')
+        # = Game Options =
 
-    def configure_gui(self):
-        '''
-        UI configuation settings.
-        '''
-        self.master.title(f'Trespasser Mod Manager {VERSION_NUMBER}')
-#        self.master.iconbitmap(r'tmm_icon.ico') # Sets the icon inside the title bar
-        self.master.geometry('400x300')
-        self.master.resizable(False, False)
-        self.master.eval('tk::PlaceWindow . center') # Centers the window
+        game_lfrm = LabelFrame(options_ifrm, text='Game')
+        game_lfrm.grid(row=1, column=0, columnspan=2, pady=5, sticky='we')
+
+        # Cheats Checkbutton
+
+        self.ce_cheats_var = IntVar()
+        self.ce_cheats_var.set(self.get_ceoption_int('Debug', 'LogDevInfo', '99', '0'))
+        ce_cheats_cb = Checkbutton(
+            game_lfrm,
+            variable=self.ce_cheats_var,
+            command=lambda: self.set_ceoption_int('Debug', 'LogDevInfo', '99', '0'),
+            text='Enable cheats'
+        )
+        ce_cheats_cb.grid(row=0, column=0, sticky='w')
+
+        # Quicksave Checkbutton
+
+        self.ce_quicksave_var = IntVar()
+        self.ce_quicksave_var.set(self.get_ceoption_bool('General', 'EnableQuickSaveKey'))
+        ce_quicksave_cb = Checkbutton(
+            game_lfrm,
+            variable=self.ce_quicksave_var,
+            command=lambda: self.set_ceoption_bool('General', 'EnableQuickSaveKey'),
+            text='Set F9 as quicksave key'
+        )
+        ce_quicksave_cb.grid(row=1, column=0, sticky='w')
+
+        # Dualstow Checkbutton
+
+        self.ce_dualstow_var = IntVar()
+        self.ce_dualstow_var.set(self.get_ceoption_bool('General', 'EnableDualStow'))
+        ce_dualstow_cb = Checkbutton(
+            game_lfrm,
+            variable=self.ce_dualstow_var,
+            command=lambda: self.set_ceoption_bool('General', 'EnableDualStow'),
+            text='Enable stowing two items at a time'
+        )
+        ce_dualstow_cb.grid(row=2, column=0, sticky='w')
+
+        # Experimental AI Behaviors Checkbutton
+
+        self.ce_behaviors_var = IntVar()
+        self.ce_behaviors_var.set(self.get_ceoption_int('Game', 'EnableAiActivityEx', '-1', '0'))
+        ce_behaviors_cb = Checkbutton(
+            game_lfrm,
+            variable=self.ce_cheats_var,
+            command=lambda: self.set_ceoption_int('Game', 'EnableAiActivityEx', '-1', '0'),
+            text='Enable Experimental AI Behaviors'
+        )
+        ce_behaviors_cb.grid(row=3, column=0, sticky='w')
+
+        # Max Active AI Checkbutton
+
+        self.ce_maxactive_var = IntVar()
+        self.ce_maxactive_var.set(self.get_ceoption_int('Game', 'MaxActiveAi', '6', '3'))
+        ce_maxactive_cb = Checkbutton(
+            game_lfrm,
+            variable=self.ce_maxactive_var,
+            command=lambda: self.set_ceoption_int('Game', 'MaxActiveAi', '6', '3'),
+            text='Set max active AI to 6'
+        )
+        ce_maxactive_cb.grid(row=4, column=0, sticky='w')
+
+        # = Display Options =
+
+        display_lfrm = LabelFrame(options_ifrm, text='Display')
+        display_lfrm.grid(row=2, column=0, columnspan=2, pady=5, sticky='nsew')
+
+        # Water Checkbutton
+
+        self.ce_water_var = IntVar()
+        self.ce_water_var.set(self.get_ceoption_bool('DisplayDX9', 'WaterRefraction'))
+        ce_water_cb = Checkbutton(
+            display_lfrm,
+            variable=self.ce_water_var,
+            command=lambda: self.set_ceoption_bool('DisplayDX9', 'WaterRefraction'),
+            text='Enable refractive water effect'
+        )
+        ce_water_cb.grid(row=0, column=0, sticky='w')
+
+        # Sky Checkbutton
+
+        self.ce_sky_var = IntVar()
+        self.ce_sky_var.set(self.get_ceoption_bool('DisplayDX9', 'EnhancedSky'))
+        ce_sky_cb = Checkbutton(
+            display_lfrm,
+            variable=self.ce_sky_var,
+            command=lambda: self.set_ceoption_bool('DisplayDX9', 'EnhancedSky'),
+            text='Enable new sky rendering method'
+        )
+        ce_sky_cb.grid(row=1, column=0, sticky='w')
+
+        # = Render Options =
+
+        render_lfrm = LabelFrame(options_ifrm, text='Render')
+        render_lfrm.grid(row=3, column=0, columnspan=2, pady=5, sticky='nsew')
+
+        # ForceMaxObjectDetail Checkbutton
+
+        self.ce_maxlod_var = IntVar()
+        self.ce_maxlod_var.set(self.set_ceoption_bool('Render', 'ForceMaxObjectDetail'))
+        ce_maxlod_cb = Checkbutton(
+            render_lfrm,
+            variable=self.ce_maxlod_var,
+            command=lambda: self.set_ceoption_bool('Render', 'ForceMaxObjectDetail'),
+            text='Force maximum level of detail'
+        )
+        ce_maxlod_cb.grid(row=0, column=0, sticky='w')
+
+    # ====== TMM Functions ======
+
+    # === Selected Mod Functions ===
 
     def set_selected_mod(self, event):
+        '''
+        Sets the selected mod and populates the mod info textbox.
+        '''
         for i in event.widget.curselection():
             selected_mod = event.widget.get(i)
-        logging.info(f'check_selected_mod says the selected mod is: {selected_mod}')
+        logging.info(f'{selected_mod} selected')
         self.selected_mod = selected_mod
+        if os.path.exists(f'mods/{selected_mod}/info.txt'):
+            logging.info(f'Info text found for {selected_mod}')
+            info_txt.config(state='normal')
+            with open(f'mods/{selected_mod}/info.txt') as file:
+                contents = file.read()
+                info_txt.delete('1.0', 'end')
+                info_txt.insert('1.0', contents)
+                info_txt.config(state='disabled')
+        else:
+            logging.info(f'Info text not found for {selected_mod}')
+            info_txt.config(state='normal')
+            info_txt.delete('1.0', 'end')
+            info_txt.insert('1.0', 'No Mod Info')
+            info_txt.config(state='disabled')
 
-    def ce_exe_settings_prompt(self):
-        '''
-        Generates a Toplevel window prompting the user to set EXE and FM paths.
-        '''
-        create_tmm_ini()
-        settings_window = Toplevel()
-        settings_window.title("Trespasser Mod Manager - Configuration")
-        settings_window.resizable('False','False')
-        self.master.eval(f'tk::PlaceWindow {str(settings_window)} center')
-        settings_window.grab_set()
-        settings_label = Label(
-            master=settings_window,
-            justify='left',
-            wraplength=400,
-            text="Your Trespasser CE exe hasn't been configured yet.\nFind your Trespasser CE exe file, press save, and try again.")
-        settings_label.grid(column=0, row=0, columnspan=1, sticky='w', padx=10, pady=(10,0))
-        exe_path_label = Label(master=settings_window, text="Trespasser CE exe path:")
-        exe_path_label.grid(column=0, row=1, sticky='w', padx=10, pady=(10,0))
-        exe_path_label2 = Label(master=settings_window, width=60, relief='sunken')
-        exe_path_label2.grid(column=0, row=2, sticky='w', padx=(10,0), pady=(0,10))
-        exe_path_button = Button(
-            master=settings_window,
-            text='...',
-            command=lambda: self.get_exe_path(exe_path_label2))
-        exe_path_button.grid(column=1, row=2, sticky='w', padx=(0, 10))
-        settings_save_button = Button(
-            master=settings_window,
-            text="Save",
-            command=lambda: self.set_exe_path(settings_window))
-        settings_save_button.grid(column=3, row=3, sticky='se', padx=10, pady=10)
+    # === trespasser.ini Functions ===
 
-    def get_exe_path(self, label):
+    def backup_trespasser_ini(self):
         '''
-        Opens file browser window for user selection of Tres CE exe path and updates label with path.
+        Creates a one-time backup of the trespasser.ini
+        '''
+        if os.path.exists('orig_trespasser.ini'):
+            logging.info('orig_trespasser.ini already exists')
+            pass
+        else:
+            orig = r'trespasser.ini'
+            backup = r'orig_trespasser.ini'
+            shutil.copy(orig, backup)
+            logging.info('trespasser.ini backup created')
+
+    def get_ceoption_bool(self, key, value):
+        '''
+        Gets bool value from key in trespasser.ini.
+        '''
+        parser = ConfigParser()
+        parser.read('trespasser.ini')
+        if parser.has_option(key, value) and (parser[key][value] == 'True' or parser[key][value] == 'true'):
+            logging.info(f'{value} in {key} detected as True')
+            return True
+        elif parser.has_option(key, value) and (parser[key][value] == 'False' or parser[key][value] == 'false'):
+            logging.info(f'{value} in {key} detected as False')
+            return False
+        else:
+            logging.info(f'{value} in {key} NOT detected. Added {value} to {key}')
+            # If section "key" doesn't exist, create it
+            if not parser.has_section(key):
+                parser.add_section(key)
+            # Add "value" to "key"
+            parser[key][value] = 'False'
+            with open(r"trespasser.ini", 'w') as configfile:
+                parser.write(configfile)
+
+
+    def set_ceoption_bool(self, key, value):
+        '''
+        Sets bool value for key in trespasser.ini.
+        '''
+        parser = ConfigParser()
+        parser.read('trespasser.ini')
+        if parser.has_option(key, value) and (parser[key][value] == 'True' or parser[key][value] == 'true'):
+            parser[key][value] = 'False'
+            logging.info(f'{value} in {key} set to False')
+        else:
+            parser[key][value] = 'True'
+            logging.info(f'{value} in {key} set to True')
+        with open('trespasser.ini', 'w') as new_config_file:
+            parser.write(new_config_file)
+
+
+    def get_ceoption_int(self, key, value, on_value, off_value):
+        '''
+        Gets int value from key in trespasser.ini.
+        '''
+
+        # on_value key for different int based settings
+        # Debug, LogDevInfo, on_value=99, off_value=0
+        # Game, EnableAiActivityEx, on_value=-1, off_value=0
+        # Game, MaxActiveAi, on_value=6, off_value=3
+
+        parser = ConfigParser()
+        parser.read('trespasser.ini')
+        if parser.has_option(key, value) and parser[key][value] == on_value:
+            logging.info(f'{value} in {key} detected as True')
+            return True
+        elif parser.has_option(key, value) and parser[key][value] != on_value:
+            logging.info(f'{value} in {key} detected as False')
+            return False
+        else:
+            logging.info(f'{value} in {key} NOT detected. Added {value} to {key}')
+            # If section "key" doesn't exist, create it
+            if not parser.has_section(key):
+                parser.add_section(key)
+            # Add "value" to "key"
+            parser[key][value] = off_value
+            with open(r"trespasser.ini", 'w') as configfile:
+                parser.write(configfile)
+
+    def set_ceoption_int(self, key, value, on_value, off_value):
+        '''
+        Sets int value for key in trespasser.ini.
+        '''
+        parser = ConfigParser()
+        parser.read('trespasser.ini')
+        if parser.has_option(key, value) and parser[key][value] == on_value:
+            parser[key][value] = off_value
+            logging.info(f'{value} in {key} set to False')
+        else:
+            parser[key][value] = on_value
+            logging.info(f'{value} in {key} set to True')
+        with open('trespasser.ini', 'w') as new_config_file:
+            parser.write(new_config_file)
+
+    # === tp_mod.ini Functions ===
+
+    def get_active_mod(self):
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        active_mod = parser['FM']['ActiveFM']
+        return active_mod
+
+    def set_active_mod(self, selected_mod, label):
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        parser['FM']['ActiveFM'] = selected_mod
+        with open('tp_mod.ini', 'w') as new_config_file:
+            parser.write(new_config_file)
+        label.config(text='Active Mod: '+ selected_mod)
+        logging.info(f'{selected_mod} set to active')
+
+    def get_fmpath(self):
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        fmpath = parser['Paths']['fmpath']
+        return fmpath
+
+    def get_installed_mods(self):
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        installed_mods = next(os.walk(self.get_fmpath()))[1]
+        return installed_mods
+
+    def get_quality(self):
+        '''
+        Gets UseRecommendedQuality from tp_mod.ini
+        '''
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        if parser.has_option('FM','UseRecommendedQuality') and (parser['FM']['UseRecommendedQuality'] == 'true'):
+            mod_quality_setting = parser['FM']['UseRecommendedQuality']
+            logging.info(f'UseRecommendedQuality in tp_mod.ini is {mod_quality_setting}')
+            return True
+        else:
+            return False
+
+    def set_quality(self):
+        '''
+        Sets UseRecommendedQuality in tp_mod.ini
+        '''
+        logging.info('UseRecommendedQuality checkbox clicked')
+        parser = ConfigParser()
+        parser.read('tp_mod.ini')
+        if parser.has_option('FM','UseRecommendedQuality') and (parser['FM']['UseRecommendedQuality'] == 'true'):
+            parser['FM']['UseRecommendedQuality'] = 'false'
+            logging.info('UseRecommendedQuality in tp_mod.ini set to False')
+        else:
+            parser['FM']['UseRecommendedQuality'] = 'true'
+            logging.info('UseRecommendedQuality in tp_mod.ini set to True')
+        with open('tp_mod.ini', 'w') as new_config_file:
+            parser.write(new_config_file)
+
+    # === tmm.ini Functions ===
+
+    def launch_game(self):
+        parser = ConfigParser()
+        parser.read('tmm.ini')
+        if os.path.exists('tmm.ini') and parser.has_option('Paths', 'exepath'):
+            logging.info('Launching game')
+            os.startfile(parser['Paths']['exepath'])
+        else:
+            logging.info('tmm.ini and/or exe path not detected.')
+            self.launch_on_save = True # Track if settings was opened via Launch button
+            self.open_settings()
+
+    def get_exepath(self, label):
+        '''
+        Open file browser window for user selection of Tres CE exe path.
         '''
         self.exe_path = filedialog.askopenfilename(
             initialdir='./',
             title='Select Trespasser CE EXE',
-            filetypes=[('Trespasser CE','*.exe')])
+            filetypes=[('Trespasser CE','*.exe')]
+        )
         label.config(text=self.exe_path)
 
-    def set_exe_path(self, window):
+    def save_settings(self, window):
         '''
-        Saves user selected Tres CE exe path to tmm_config.ini and closes window.
+        Saves Tres CE exe path to tmm_config.ini and closes window.
         '''
+        # If tmm.ini doesn't exist, create it.
+        if not os.path.exists('tmm.ini'):
+            parser = ConfigParser()
+            parser.add_section('Paths')
+            with open(r'tmm.ini', 'w') as configfile:
+                parser.write(configfile)
+
+        # Save the exe path setting
         parser = ConfigParser()
-        parser.read('tmm_config.ini')
+        parser.read('tmm.ini')
         parser['Paths']['exepath'] = self.exe_path
-        with open(r"tmm_config.ini", 'w') as configfile:
+        with open(r'tmm.ini', 'w') as configfile:
             parser.write(configfile)
-        logging.info('Exe path has been set')
+        logging.info(f'Exe path set to {self.exe_path}')
+
+        # If Settings opened via Launch button, launch on save
+        if self.launch_on_save:
+            self.launch_on_save = False
+            self.launch_game()
+        else:
+            pass
+
         window.destroy()
 
-    def install_modfromzip_prompt(self):
-        '''
-        Generates a Toplevel window prompting the user to install a certified mod.
-        '''
-        modfromzip_window = Toplevel()
-        modfromzip_window.title("Trespasser Mod Manager - Install Mod from Zip file")
-        modfromzip_window.resizable('False','False')
-        self.master.eval(f'tk::PlaceWindow {str(modfromzip_window)} center')
-        modfromzip_window.grab_set()
-        modfromzip_label = Label(
-            master=modfromzip_window,
+    # === Toplevel Functions ===
+
+    def open_settings(self):
+        # Configure Window
+        settings_win = Toplevel()
+        settings_win.title('Trespasser Mod Manager - Settings')
+        settings_win.resizable('False', 'False')
+        self.parent.eval(f'tk::PlaceWindow {str(settings_win)} center')
+        settings_win.grab_set()
+
+        # Settings Window Labels
+        settings_lbl = Label(
+            settings_win,
             justify='left',
             wraplength=400,
-            text="Install a TMM-certified Mod from a Zip file.")
-        modfromzip_label.grid(column=0, row=0, columnspan=1, sticky='w', padx=10, pady=(10,0))
-        zip_path_label = Label(master=modfromzip_window, text="TMM-certified Mod path:")
-        zip_path_label.grid(column=0, row=1, sticky='w', padx=10, pady=(10,0))
-        zip_path_label2 = Label(master=modfromzip_window, width=60, relief='sunken')
-        zip_path_label2.grid(column=0, row=2, sticky='w', padx=(10,0), pady=(0,10))
-        zip_path_button = Button(
-            master=modfromzip_window,
-            text='...',
-            command=lambda: self.get_zip_path(zip_path_label2))
-        zip_path_button.grid(column=1, row=2, sticky='w', padx=(0, 10))
-        modfromzip_install_button = Button(
-            master=modfromzip_window,
-            text="Install",
-            command=lambda: self.install_modfromzip(self.zip_path, modfromzip_window))
-        modfromzip_install_button.grid(column=3, row=3, sticky='se', padx=10, pady=10)
+            text='To launch Trespasser CE using Trespasser Mod Manager, find and save your Trespasser CE exe path below.'
+        )
+        settings_lbl.grid(column=0, row=0, columnspan=1, sticky='w', padx=10, pady=(10, 0))
 
-    def get_zip_path(self, label):
+        exepath_lbl = Label(settings_win, text='Trespasser CE exe path:')
+        exepath_lbl.grid(column=0, row=1, sticky='w', padx=10, pady=(10, 0))
+
+        exepath_field = Label(settings_win, justify='left', width=60, relief='sunken')
+        exepath_field.grid(column=0, row=2, sticky='w', padx=(10, 0), pady=(5, 0))
+
+        # If path already set, display path in field
+        parser = ConfigParser()
+        parser.read('tmm.ini')
+        if parser.has_option('Paths', 'exepath'):
+            exe_path = parser['Paths']['exepath']
+            exepath_field.config(text=f'{exe_path}')
+
+        # Settings Window Buttons
+        exepath_btn = Button(
+            settings_win,
+            text='...',
+            command=lambda: self.get_exepath(exepath_field)
+        )
+        exepath_btn.grid(column=1, row=2, padx=(5, 10))
+
+        settings_savebtn = Button(
+            settings_win,
+            text='Save',
+            command=lambda: self.save_settings(settings_win)
+        )
+        settings_savebtn.grid(column=3, row=3, sticky='se', padx=10, pady=10)
+
+    # = Installation Functions =
+
+    def install_mfz(self):
         '''
-        Opens file browser window for user selection of Tres CE exe path and updates label with path.
+        Opens file browser for user selection of Tres CE exe path and installs.
         '''
-        self.zip_path = filedialog.askopenfilename(
+
+        # Prompt user for zip file path
+
+        zippath = filedialog.askopenfilename(
             initialdir='./',
             title='Select TMM-certified Mod Zip file',
-            filetypes=[('TMM-certified Mod Zip file','*.zip')])
-        label.config(text=self.zip_path)
+            filetypes=[('TMM-certified Mod Zip file','*.zip')]
+        )
 
-    def install_modfromzip(self, path, window):
-        fmpath = get_fmpath()
-        with zipfile.ZipFile(path, 'r') as zip_file:
-            zip_file.extractall(fmpath)
-        logging.info(f'Installed {self.zip_path}')
-        messagebox.showinfo(
-            title="Trespasser Mod Manager - Installation Complete!",
-            message="Mod installed! Please restart Trespasser Mod Manager")
-        window.destroy()
-        raise SystemExit
+        # Confirm that user selected a path
 
-    def install_tresfromcd_prompt(self):
+        if not zippath == '':
+
+            # Get the fmpath to place the zip contents into
+
+            fmpath = self.get_fmpath()
+
+            with zipfile.ZipFile(zippath, 'r') as zip_file:
+                zip_file.extractall(fmpath)
+
+            # Notify user that installation was successful
+
+            logging.info(f'Installed {zippath}')
+            messagebox.showinfo(
+                title='Trespasser Mod manager - Installation Complete!',
+                message='Mod installed! Trespasser Mod Manager will now restart.'
+            )
+
+            # Restart TMM
+
+            os.startfile('tmm.exe')
+            raise SystemExit
+
+    def install_retail(self):
         '''
-        Generates a Toplevel window prompting the user to install Trespasser from the disc.
+        Installs the retail Trespasser game files from disc or folder.
         '''
-        tresfromcd_window = Toplevel()
-        tresfromcd_window.title("Trespasser Mod Manager - Install Trespasser from CD")
-        tresfromcd_window.resizable('False','False')
-        self.master.eval(f'tk::PlaceWindow {str(tresfromcd_window)} center')
-        tresfromcd_window.grab_set()
-        tresfromcd_label = Label(
-            master=tresfromcd_window,
-            justify='left',
-            wraplength=400,
-            text="Install Trespasser from CD.")
-        tresfromcd_label.grid(column=0, row=0, columnspan=1, sticky='w', padx=10, pady=(10,0))
-        cd_path_label = Label(master=tresfromcd_window, text="Trespasser CD path:")
-        cd_path_label.grid(column=0, row=1, sticky='w', padx=10, pady=(10,0))
-        cd_path_label2 = Label(master=tresfromcd_window, width=60, relief='sunken')
-        cd_path_label2.grid(column=0, row=2, sticky='w', padx=(10,0), pady=(0,10))
-        cd_path_button = Button(
-            master=tresfromcd_window,
-            text='...',
-            command=lambda: self.get_trescd_path(cd_path_label2))
-        cd_path_button.grid(column=1, row=2, sticky='w', padx=(0, 10))
-        tresfromcd_install_button = Button(
-            master=tresfromcd_window,
-            text="Install",
-            command=lambda: self.install_tresfromcd(self.trescd_path, tresfromcd_window))
-        tresfromcd_install_button.grid(column=3, row=3, sticky='se', padx=10, pady=10)
 
-    def install_tresfromcd(self, path, window):
-        fmpath = get_fmpath()
-        retail_files = [
-            'as.GRF',
-            'as.scn',
-            'as.wtd',
-            'as2.grf',
-            'as2.scn',
-            'as2-130.pid',
-            'as2-130.spz',
-            'as4.wtd',
-            'as-130.pid',
-            'as-130.spz',
-            'be.GRF',
-            'be.scn',
-            'be.wtd',
-            'be-130.pid',
-            'be-130.spz',
-            'ij.GRF',
-            'ij.scn',
-            'ij.wtd',
-            'ij-130.pid',
-            'ij-130.spz',
-            'it.GRF',
-            'IT.scn',
-            'it.wtd',
-            'it-130.pid',
-            'it-130.spz',
-            'jr.GRF',
-            'jr.scn',
-            'jr.wtd',
-            'jr-130.pid',
-            'jr-130.spz',
-            'lab.GRF',
-            'lab.scn',
-            'lab.wtd',
-            'lab-130.pid',
-            'lab-130.spz',
-            'sum.GRF',
-            'sum.scn',
-            'sum.wtd',
-            'sum-130.pid',
-            'sum-130.spz',
-            'testscene.GRF',
-            'TestScene.scn',
-            'testScene.wtd',
-            'TestScene-130.pid',
-            'TestScene-130.spz',
-            'testscnnght.GRF',
-            'TestScnNght.scn',
-            'TestScnNght-130.pid',
-            'TestScnNght-130.spz']
-        os.makedirs(f'{fmpath}/Trespasser')
-        files = os.listdir(path)
-        for root, dirs, files in os.walk(path):
-            for _file in files:
-               if _file in retail_files:
-                    shutil.copy(os.path.abspath(root + '/' + _file), f'{fmpath}/Trespasser')
-        shutil.copytree(f'{path}/data/menu', f'{fmpath}/Trespasser/menu')
-        logging.info('Installed Trespasser')
-        messagebox.showinfo(
-            title="Trespasser Mod Manager - Installation Complete!",
-            message="Trespasser installed! Please restart Trespasser Mod Manager")
-        window.destroy()
-        raise SystemExit
+        # Get the fmpath
 
-    def get_trescd_path(self, label):
-        self.trescd_path = filedialog.askdirectory(
-            initialdir='./',
-            title='Select Trespasser CD')
-        label.config(text=self.trescd_path)
+        fmpath = self.get_fmpath()
+
+        # Check to see if TrespasserRetail is already installed
+
+        if os.path.isdir(f'{fmpath}/TrespasserRetail'):
+            messagebox.showinfo(
+                message='Trespasser has already been installed.'
+                )
+        else:
+                
+            # Promp user for Tres CD directory path
+
+            cdpath = filedialog.askdirectory(
+                initialdir='./',
+                title='Select Trespasser CD directory'
+            )
+
+            # Confirm that user selected a path
+
+            if not cdpath == '':
+
+                # Create a list of all retail files
+
+                retail_files = [
+                    'as.GRF',
+                    'as.scn',
+                    'as.wtd',
+                    'as2.grf',
+                    'as2.scn',
+                    'as2-130.pid',
+                    'as2-130.spz',
+                    'as2-130.swp',
+                    'as4.wtd',
+                    'as-130.pid',
+                    'as-130.spz',
+                    'as-130.swp',
+                    'be.GRF',
+                    'be.scn',
+                    'be.wtd',
+                    'be-130.pid',
+                    'be-130.spz',
+                    'be-130.swp',
+                    'ij.GRF',
+                    'ij.scn',
+                    'ij.wtd',
+                    'ij-130.pid',
+                    'ij-130.spz',
+                    'ij-130.swp',
+                    'it.GRF',
+                    'IT.scn',
+                    'it.wtd',
+                    'it-130.pid',
+                    'it-130.spz',
+                    'it-130.swp',
+                    'jr.GRF',
+                    'jr.scn',
+                    'jr.wtd',
+                    'jr-130.pid',
+                    'jr-130.spz',
+                    'jr-130.swp',
+                    'lab.GRF',
+                    'lab.scn',
+                    'lab.wtd',
+                    'lab-130.pid',
+                    'lab-130.spz',
+                    'lab-130.swp',
+                    'sum.GRF',
+                    'sum.scn',
+                    'sum.wtd',
+                    'sum-130.pid',
+                    'sum-130.spz',
+                    'sum-130.swp',
+                    'testscene.GRF',
+                    'TestScene.scn',
+                    'testScene.wtd',
+                    'TestScene-130.pid',
+                    'TestScene-130.spz',
+                    'TestScene-130.swp',
+                    'testscnnght.GRF',
+                    'TestScnNght.scn',
+                    'TestScnNght-130.pid',
+                    'TestScnNght-130.spz',
+                    'TestScnNght-130.swp'
+                ]
+
+                # Create the folder to place the files
+                os.makedirs(f'{fmpath}/TrespasserRetail')
+
+                # Check the CD path for the files and copy them to the CE folder
+                files = os.listdir(cdpath)
+                for root, dirs, files in os.walk(cdpath):
+                    for _file in files:
+                        if _file in retail_files:
+                            shutil.copy(os.path.abspath(root + '/' + _file), f'{fmpath}/TrespasserRetail')
+                shutil.copytree(f'{cdpath}/data/menu', f'{fmpath}/TrespasserRetail/menu')
+
+                # Create an info.txt for RetailTrespasser
+                with open(f'{fmpath}/TrespasserRetail/info.txt', 'w') as f:
+                    f.write('The original Trespasser experience by Dreamworks Interactive')
+
+                # Notify user that installation was successful
+                logging.info('Installed Trespasser')
+                messagebox.showinfo(
+                    title='Trespasser Mod Manager - Installation Complete!',
+                    message='Trespasser installed! Trespasser Mod Manager will now restart.'
+                )
+
+                # Restart TMM
+                os.startfile('tmm.exe')
+                raise SystemExit
 
 
 if __name__ == '__main__':
+    validation()
     root = Tk()
     tmm_app = MainApplication(root)
     root.mainloop()
-    

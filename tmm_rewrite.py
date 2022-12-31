@@ -209,7 +209,7 @@ class MainApplication:
         # === Generate Options Widgets ===
 
         options_lbl = Label(options_ifrm, text='Basic CE Options')
-        options_lbl.grid(row=0, column=0)
+        options_lbl.grid(row=0, column=0, pady=(0, 5))
 
         # hack to get lframes to fill window ...
         options_spacer = Label(
@@ -219,19 +219,19 @@ class MainApplication:
         options_spacer.grid(row=0, column=1)
 
 
-        # = General Options =
+        # = Game Options =
 
-        general_lfrm = LabelFrame(options_ifrm, text='General')
-        general_lfrm.grid(row=1, column=0, columnspan=2, sticky='we')
+        game_lfrm = LabelFrame(options_ifrm, text='Game')
+        game_lfrm.grid(row=1, column=0, columnspan=2, pady=5, sticky='we')
 
         # Cheats Checkbutton
 
         self.ce_cheats_var = IntVar()
-        self.ce_cheats_var.set(self.get_ceoption_int('Debug', 'LogDevInfo', '99'))
+        self.ce_cheats_var.set(self.get_ceoption_int('Debug', 'LogDevInfo', '99', '0'))
         ce_cheats_cb = Checkbutton(
-            general_lfrm,
+            game_lfrm,
             variable=self.ce_cheats_var,
-            command=lambda: self.set_ceoption_int('Debug', 'LogDevInfo', '99'),
+            command=lambda: self.set_ceoption_int('Debug', 'LogDevInfo', '99', '0'),
             text='Enable cheats'
         )
         ce_cheats_cb.grid(row=0, column=0, sticky='w')
@@ -241,7 +241,7 @@ class MainApplication:
         self.ce_quicksave_var = IntVar()
         self.ce_quicksave_var.set(self.get_ceoption_bool('General', 'EnableQuickSaveKey'))
         ce_quicksave_cb = Checkbutton(
-            general_lfrm,
+            game_lfrm,
             variable=self.ce_quicksave_var,
             command=lambda: self.set_ceoption_bool('General', 'EnableQuickSaveKey'),
             text='Set F9 as quicksave key'
@@ -253,17 +253,41 @@ class MainApplication:
         self.ce_dualstow_var = IntVar()
         self.ce_dualstow_var.set(self.get_ceoption_bool('General', 'EnableDualStow'))
         ce_dualstow_cb = Checkbutton(
-            general_lfrm,
+            game_lfrm,
             variable=self.ce_dualstow_var,
             command=lambda: self.set_ceoption_bool('General', 'EnableDualStow'),
             text='Enable stowing two items at a time'
         )
         ce_dualstow_cb.grid(row=2, column=0, sticky='w')
 
+        # Experimental AI Behaviors Checkbutton
+
+        self.ce_behaviors_var = IntVar()
+        self.ce_behaviors_var.set(self.get_ceoption_int('Game', 'EnableAiActivityEx', '-1', '0'))
+        ce_behaviors_cb = Checkbutton(
+            game_lfrm,
+            variable=self.ce_cheats_var,
+            command=lambda: self.set_ceoption_int('Game', 'EnableAiActivityEx', '-1', '0'),
+            text='Enable Experimental AI Behaviors'
+        )
+        ce_behaviors_cb.grid(row=3, column=0, sticky='w')
+
+        # Max Active AI Checkbutton
+
+        self.ce_maxactive_var = IntVar()
+        self.ce_maxactive_var.set(self.get_ceoption_int('Game', 'MaxActiveAi', '6', '3'))
+        ce_maxactive_cb = Checkbutton(
+            game_lfrm,
+            variable=self.ce_maxactive_var,
+            command=lambda: self.set_ceoption_int('Game', 'MaxActiveAi', '6', '3'),
+            text='Set max active AI to 6'
+        )
+        ce_maxactive_cb.grid(row=4, column=0, sticky='w')
+
         # = Display Options =
 
         display_lfrm = LabelFrame(options_ifrm, text='Display')
-        display_lfrm.grid(row=2, column=0, columnspan=2, sticky='nsew')
+        display_lfrm.grid(row=2, column=0, columnspan=2, pady=5, sticky='nsew')
 
         # Water Checkbutton
 
@@ -292,7 +316,7 @@ class MainApplication:
         # = Render Options =
 
         render_lfrm = LabelFrame(options_ifrm, text='Render')
-        render_lfrm.grid(row=3, column=0, columnspan=2, sticky='nsew')
+        render_lfrm.grid(row=3, column=0, columnspan=2, pady=5, sticky='nsew')
 
         # ForceMaxObjectDetail Checkbutton
 
@@ -362,9 +386,14 @@ class MainApplication:
             return False
         else:
             logging.info(f'{value} in {key} NOT detected. Added {value} to {key}')
+            # If section "key" doesn't exist, create it
+            if not parser.has_section(key):
+                parser.add_section(key)
+            # Add "value" to "key"
             parser[key][value] = 'False'
             with open(r"trespasser.ini", 'w') as configfile:
                 parser.write(configfile)
+
 
     def set_ceoption_bool(self, key, value):
         '''
@@ -382,13 +411,16 @@ class MainApplication:
             parser.write(new_config_file)
 
 
-    def get_ceoption_int(self, key, value, on_value):
+    def get_ceoption_int(self, key, value, on_value, off_value):
         '''
         Gets int value from key in trespasser.ini.
         '''
+
         # on_value key for different int based settings
-        # Debug, LogDevInfo, on_value=99
-        # Game, EnableAiActivityEx, on_value=-1
+        # Debug, LogDevInfo, on_value=99, off_value=0
+        # Game, EnableAiActivityEx, on_value=-1, off_value=0
+        # Game, MaxActiveAi, on_value=6, off_value=3
+
         parser = ConfigParser()
         parser.read('trespasser.ini')
         if parser.has_option(key, value) and parser[key][value] == on_value:
@@ -399,19 +431,22 @@ class MainApplication:
             return False
         else:
             logging.info(f'{value} in {key} NOT detected. Added {value} to {key}')
-            parser.add_section('Debug')
-            parser[key][value] = '0'
+            # If section "key" doesn't exist, create it
+            if not parser.has_section(key):
+                parser.add_section(key)
+            # Add "value" to "key"
+            parser[key][value] = off_value
             with open(r"trespasser.ini", 'w') as configfile:
                 parser.write(configfile)
 
-    def set_ceoption_int(self, key, value, on_value):
+    def set_ceoption_int(self, key, value, on_value, off_value):
         '''
         Sets int value for key in trespasser.ini.
         '''
         parser = ConfigParser()
         parser.read('trespasser.ini')
         if parser.has_option(key, value) and parser[key][value] == on_value:
-            parser[key][value] = '0'
+            parser[key][value] = off_value
             logging.info(f'{value} in {key} set to False')
         else:
             parser[key][value] = on_value
