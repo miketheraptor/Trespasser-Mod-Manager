@@ -280,7 +280,7 @@ class MainApplication:
             game_lfrm,
             variable=self.ce_behaviors_var,
             command=lambda: self.set_ceoption_int('Game', 'EnableAiActivityEx', '-1', '0'),
-            text='Enable Experimental AI Behaviors'
+            text='Enable experimental AI behaviors'
         )
         ce_behaviors_cb.grid(row=3, column=0, sticky='w')
 
