@@ -90,16 +90,28 @@ class MainApplication:
         # ====== Create header ====== #
 
         separator = ttk.Separator(parent, orient='horizontal')
-        separator.grid(row=0, column=0, sticky='we')
+        separator.grid(row=0, column=0, columnspan=2, sticky='we')
+
+        title_lbl = Label(
+            parent,
+            text='Trespasser',
+            font=('Impact', 20))
+        title_lbl.grid(row=1, column=0, padx=10, sticky='sw')
+
+        subtitle_lbl = Label(
+            parent,
+            text='MOD MANAGER',
+            font=('Cambria', 10))
+        subtitle_lbl.grid(row=2, column=0, padx=25, sticky='nw')
 
         launch_btn = Button(parent, command=self.launch_game, text='Launch Trespasser CE')
-        launch_btn.grid(row=1, column=0, padx=10, pady=(10,5))
+        launch_btn.grid(row=1, column=1, padx=10, pady=(10,5), sticky='e')
 
         amod_lbl = Label(text=f'Active: {self.active_mod}')
-        amod_lbl.grid(row=2, column=0)
+        amod_lbl.grid(row=2, column=1, padx=10, sticky='e')
 
         separator = ttk.Separator(parent, orient='horizontal')
-        separator.grid(row=3, column=0, sticky='we', pady=5)
+        separator.grid(row=3, column=0, columnspan=2, sticky='we', pady=5)
 
         # ====== Create notebook tabs ======
 
@@ -111,7 +123,7 @@ class MainApplication:
         options_frm.grid_propagate(False) # req for scrollable frame
         tabs_bar.add(mods_frm, text='Mods')
         tabs_bar.add(options_frm, text='CE Options')
-        tabs_bar.grid(row=4, column=0)
+        tabs_bar.grid(row=4, column=0, columnspan=2)
 
         # ====== Create Mods tab content ======
 
@@ -266,7 +278,7 @@ class MainApplication:
         self.ce_behaviors_var.set(self.get_ceoption_int('Game', 'EnableAiActivityEx', '-1', '0'))
         ce_behaviors_cb = Checkbutton(
             game_lfrm,
-            variable=self.ce_cheats_var,
+            variable=self.ce_behaviors_var,
             command=lambda: self.set_ceoption_int('Game', 'EnableAiActivityEx', '-1', '0'),
             text='Enable Experimental AI Behaviors'
         )
