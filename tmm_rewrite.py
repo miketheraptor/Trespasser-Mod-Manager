@@ -54,10 +54,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s:%(message)s',
     datefmt='%Y-%m-%d %I:%M',
     level=logging.INFO)
-
-class FirstTimeSetup(Toplevel):
-    def __init__(self):
-        pass
+    
 
 class MainApplication:
     def __init__(self, parent, *args, **kwargs):
