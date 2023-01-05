@@ -1,5 +1,6 @@
 mods/*
 FMs/*
+fmpath/*
 tp_mod.ini
 *.exe
 __pycache__/

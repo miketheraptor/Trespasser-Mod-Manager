@@ -3,7 +3,7 @@ Trespasser Mod Manager (TMM) by MikeTheRaptor
 The GUI-based mod manager for Trespasser CE
 '''
 
-VERSION_NUMBER = 'v1.0.0'
+VERSION_NUMBER = 'v1.0.1'
 
 from configparser import ConfigParser
 from tkinter import (
@@ -350,14 +350,15 @@ class MainApplication:
         '''
         Sets the selected mod and populates the mod info textbox.
         '''
+        fmpath = self.get_fmpath()
         for i in event.widget.curselection():
             selected_mod = event.widget.get(i)
         logging.info(f'{selected_mod} selected')
         self.selected_mod = selected_mod
-        if os.path.exists(f'mods/{selected_mod}/info.txt'):
+        if os.path.exists(f'{fmpath}/{selected_mod}/info.txt'):
             logging.info(f'Info text found for {selected_mod}')
             info_txt.config(state='normal')
-            with open(f'mods/{selected_mod}/info.txt') as file:
+            with open(f'{fmpath}/{selected_mod}/info.txt') as file:
                 contents = file.read()
                 info_txt.delete('1.0', 'end')
                 info_txt.insert('1.0', contents)
