@@ -155,7 +155,7 @@ class MainApplication:
 
         # === Selected Mod Frame ===
 
-        smod_lfrm = LabelFrame(mods_frm, text='Selected Mod Info')
+        smod_lfrm = LabelFrame(mods_frm, text='Mod Description')
         smod_lfrm.grid(row=0, column=1, padx=(2.5, 0))
 
         # Mod Info Text
