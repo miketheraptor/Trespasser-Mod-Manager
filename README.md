@@ -22,21 +22,21 @@ Trespasser Mod Manager is dependant on features introduced by Trespasser CE.
 
 #### Easy Method (Trespasser 2020)
 Trespasser 2020 contains a prepackaged, standalone version of the Trespasser CE engine that can run Trespasser levels and mods without needing the retail game.
-1. [Download Trespasser 2020](https://www.trescom.org/download/trespasser-2020-a-trespasser-modding-starter-kit/) from TresCom
-2. Extract the contents of the 7z archive to your PC
+1. [Download Trespasser 2020](https://www.trescom.org/download/trespasser-2020-a-trespasser-modding-starter-kit/) from TresCom.
+2. Extract the contents of the 7z archive to your PC.
 
 #### Advanced Method (Manually Patch a Retail Installation)
 The retail game engine can be manually patched.
-1. [Download Trespasser CE Patch](https://www.trescom.org/download/trespasser-ce-patch/) from TresCom
-2. Extract the contents of the tpass-ce.zip and contrib.zip archives to your Trespasser installation folder
-3. Copy and paste the tp_mod.ini file from the /doc/ folder to the installation folder (same folder as Trespasser exe file)
+1. [Download Trespasser CE Patch](https://www.trescom.org/download/trespasser-ce-patch/) from TresCom.
+2. Extract the contents of the tpass-ce.zip and contrib.zip archives to your Trespasser installation folder.
+3. Copy and paste the tp_mod.ini file from the /doc/ folder to the installation folder (same folder as Trespasser exe file).
 4. Create a new folder in the installation folder (same folder as Trespasser exe file) for storing your mods. The folder can be named anything, but the default for Trespasser CE is /FMs/
 5. Edit the tp_mod.ini folder and remove the ";" from the line `;FMPath=FMs`. FMs refers to your mods folder and it can be changed if you used a different name. Example: `FMPath=mods`.
 6. Copy and paste the trespasser_dx9.ini or trespasser_dx9-hq.ini from the /doc/configs/ folder to the installation folder (same folder as Trespasser exe file). This file controls some Trespasser CE settings. The hq file has higher graphics settings but can be less stable.
 
 ## Installation
 1. Check [releases](https://github.com/miketheraptor/Trespasser-Mod-Manager/releases) for the latest version of Trespasser Mod Manager and download it.
-2. Place the tmm.exe file into the Trespasser CE directory (the same folder where the Trespasser CE exe is located)
+2. Place the tmm.exe file into the Trespasser CE directory (the same folder where the Trespasser CE exe is located).
 
 # Usage
 Trespasser Mod Manager can be used to do the following:
@@ -64,7 +64,7 @@ In order to be compatible, follow these guidelines:
 * All other mod files should be inside the mod folder.
 
 # Acknowledgements
-Thank you to the members at the TresCom Discord and Forum whose support and suggestions fueled this projects development.
+Thank you to the members at the TresCom Discord and Forum whose support and suggestions fueled this project's development.
 
 Join the Trespasser Community at TresCom by following the links below:
 * [TresCom Forum](https://www.trescom.org)
