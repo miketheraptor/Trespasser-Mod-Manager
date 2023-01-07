@@ -628,7 +628,7 @@ class MainApplication:
 
     def install_mfz(self):
         '''
-        Opens file browser for user selection of Tres CE exe path and installs.
+        Installs a TMM certified Trespasser mod from a zip file.
         '''
 
         # Prompt user for zip file path
