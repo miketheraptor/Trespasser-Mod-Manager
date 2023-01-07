@@ -4,9 +4,10 @@
 
 *The GUI-based utility for managing Trespasser mods.*
 
-<img width="357" alt="Trespasser CE v1.0.0 Mods Tab" src="https://user-images.githubusercontent.com/18666598/211119258-7a76b83f-e1b0-44f1-b17e-025854ad9198.png">
-
-<img width="357" alt="Trespasser CE v1.0.0 CE Options Tab" src="https://user-images.githubusercontent.com/18666598/211119273-0f9635b7-b947-4091-9d06-33acb15a9b1a.png">
+<p float="left">
+ <img width="357" alt="Trespasser CE v1.0.0 Mods Tab" src="https://user-images.githubusercontent.com/18666598/211119258-7a76b83f-e1b0-44f1-b17e-025854ad9198.png">
+ <img width="357" alt="Trespasser CE v1.0.0 CE Options Tab" src="https://user-images.githubusercontent.com/18666598/211119273-0f9635b7-b947-4091-9d06-33acb15a9b1a.png">
+</p>
 
 # Getting Started
 
