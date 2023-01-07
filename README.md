@@ -46,6 +46,22 @@ Trespasser Mod Manager can be used to do the following:
 * Install the retail level files to your Trespasser CE installation from a CD/iso/folder containing the files
 * Launch Trespasser CE
 
+# For Trespasser Modders / Level Creators
+This section is for people who are creating new content for Trespasser. Trespasser Mod Manager includes some modding features you might like to take advantage of.
+
+## Mod Description File (info.txt)
+Trespasser Mod Manager checks installed mods for the presence of a file named "info.txt". Any text placed into the "info.txt" file will be displayed in the Mod Description textbox when the mod is selected.
+
+Place the "info.txt" file into the mod's top folder. An example path could be: TresCE/mods/YourMod/info.txt. In this example, TresCE is the folder containing the tmm.exe and Trespasser CE .exe files, mods is the fmpath, and YourMod is the folder containing all of your mod's files.
+
+## Making Mods Compatible with TMM Install Mod from Zip Feature (TMM Certified Mods)
+TMM Certified Mods are mods which are standardized for compatability with Trespasser Mod Manager's Install Mod from Zip functionality. This makes it easy for players to install your mod without having to read a readme file or manually place folders and files in specific directories.
+
+In order to be compatible, follow these guidelines:
+* Use a .zip archive to store all of the levels. Other popular archives (7z, rar) are not supported
+* Inside the .zip archive, all levels should be stored in a mod folder named for your mod. TMM will extract this folder and place it inside the player's fmpath directory. The name of this folder will appear in the mods list in TMM.
+* All other mod files should be inside the mod folder.
+
 # Acknowledgements
 Thank you to the members at the TresCom Discord and Forum whose support and suggestions fueled this projects development.
 
