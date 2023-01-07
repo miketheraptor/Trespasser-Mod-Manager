@@ -30,7 +30,7 @@ The retail game engine can be manually patched.
 1. [Download Trespasser CE Patch](https://www.trescom.org/download/trespasser-ce-patch/) from TresCom
 2. Extract the contents of the tpass-ce.zip and contrib.zip archives to your Trespasser installation folder
 3. Copy and paste the tp_mod.ini file from the /doc/ folder to the installation folder (same folder as Trespasser exe file)
-4. Create a new folder in the installation folder (same folder as Trespasser exe file) for store your mods. The folder can be named anything, but the default for Trespasser CE is /FMs/
+4. Create a new folder in the installation folder (same folder as Trespasser exe file) for storing your mods. The folder can be named anything, but the default for Trespasser CE is /FMs/
 5. Edit the tp_mod.ini folder and remove the ";" from the line `;FMPath=FMs`. FMs refers to your mods folder and it can be changed if you used a different name. Example: `FMPath=mods`.
 6. Copy and paste the trespasser_dx9.ini or trespasser_dx9-hq.ini from the /doc/configs/ folder to the installation folder (same folder as Trespasser exe file). This file controls some Trespasser CE settings. The hq file has higher graphics settings but can be less stable.
 
